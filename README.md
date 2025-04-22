@@ -1,3 +1,1 @@
-# Generated Project Skeleton
-
-A simple operator that copies the value in a spec to a ConfigMap. 
+# Generated Project Skeleton from https://javaoperatorsdk.io/docs/getting-started/bootstrap-and-samples/
