@@ -1,0 +1,8 @@
+apiVersion: nebulastream.com/v1
+kind: NesTopology
+metadata:
+  name: test-topology
+spec:
+  image: "nebulastream/worker:nightly"
+  args:
+    - "--worker.bufferSizeInBytes=1"
