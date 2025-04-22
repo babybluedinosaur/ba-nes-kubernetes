@@ -12,15 +12,22 @@ spec:
         openAPIV3Schema:
           type: object # the example yaml itself
           properties:
-            spec: # object inside example yaml
+            spec:
               type: object
-              properties: # properties of the object
-                image:
-                  type: string
-                args:
-                  type: array
+              properties:
+                workerSpecs:
+                  type: array # we want several workers
                   items:
-                    type: string
+                    type: object
+                    properties: # properties of the object
+                      name:
+                        type: string
+                      image:
+                        type: string
+                      args: # arguments for the worker
+                        type: array
+                        items:
+                          type: string
   scope: Namespaced
   names:
     plural: nes-topologies

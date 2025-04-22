@@ -3,6 +3,11 @@ kind: NesTopology
 metadata:
   name: test-topology
 spec:
-  image: "nebulastream/worker:nightly"
-  args:
-    - "--worker.bufferSizeInBytes=1"
+  workerSpecs:
+    - name: "worker1"
+      image: "nebulastream/worker:nightly"
+      args:
+        - "--worker.bufferSizeInBytes=1"
+    - name: "worker2"
+      image: "nebulastream/worker:nightly"
+      args:
