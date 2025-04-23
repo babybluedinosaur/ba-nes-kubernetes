@@ -6,8 +6,6 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
-import io.javaoperatorsdk.operator.api.reconciler.dependent.Dependent;
-import io.javaoperatorsdk.operator.api.reconciler.Workflow;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,26 +20,27 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
     public UpdateControl<NesTopology> reconcile(NesTopology primary,
                                                 Context<NesTopology> context) {
-        // We have to iterate over WorkerSpecs in NesTopologySpec
-        String name = primary.getMetadata().getName();
-        System.out.println("NesTopology: " + name);
-        Deployment deployment = new DeploymentBuilder()
-                .withNewMetadata().withName(name).endMetadata()
-                .withNewSpec()
-                .withNewSelector().addToMatchLabels("app", name).endSelector()
-                .withNewTemplate()
-                .withNewMetadata().addToLabels("app", name).endMetadata()
-                .withNewSpec()
-                .addAllToContainers(createContainers(primary))
-                .endSpec()
-                .endTemplate()
-                .endSpec()
-                .build();
+        // Create a deployment for each worker
+        for (Container container : createContainers(primary)) {
+            String name = container.getName();
+            Deployment deployment = new DeploymentBuilder()
+                    .withNewMetadata().withName(name).endMetadata()
+                    .withNewSpec()
+                    .withNewSelector().addToMatchLabels("app", name).endSelector()
+                    .withNewTemplate()
+                    .withNewMetadata().addToLabels("app", name).endMetadata()
+                    .withNewSpec()
+                    .addToContainers(container)
+                    .endSpec()
+                    .endTemplate()
+                    .endSpec()
+                    .build();
 
-        System.out.println("creating deployment...: " + deployment.getMetadata().getName());
-        client.apps().deployments().inNamespace(primary.getMetadata().getNamespace())
-                .createOrReplace(deployment);
-        System.out.println("deployment created successfully");
+            System.out.println("creating deployment...: " + deployment.getMetadata().getName());
+            client.apps().deployments().inNamespace(primary.getMetadata().getNamespace())
+                    .createOrReplace(deployment);
+            System.out.println("deployment created successfully");
+        }
 
         return UpdateControl.noUpdate();
     }
