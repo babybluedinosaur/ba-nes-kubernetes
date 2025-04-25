@@ -17,8 +17,8 @@ delete-example:
 delete-crd:
 	kubectl delete -f src/main/resources/crds/nes-topology.yaml
 
-delete-deployment:
-	kubectl delete deployment test-topology
+delete-deployments:
+	kubectl delete deployment --all
 
 describe-deployments:
 	kubectl describe deployments
@@ -34,6 +34,9 @@ get-deployments:
 
 get-crds:
 	kubectl get crds
+
+get-services:
+	kubectl get services
 
 get-pods:
 	kubectl get pods -o wide

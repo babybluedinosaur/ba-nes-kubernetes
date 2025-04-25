@@ -11,3 +11,16 @@ spec:
     - name: "worker2"
       image: "nebulastream/worker:nightly"
       args:
+        - "--worker.bufferSizeInBytes=2"
+    - name: "worker3"
+      image: "nebulastream/worker:nightly"
+      args:
+        - "--worker.bufferSizeInBytes=3"
+    - name: "worker4"
+      image: "nebulastream/worker:nightly"
+      args:
+        - "--worker.bufferSizeInBytes=4"
+    - name: "worker5"
+      image: "nebulastream/worker:nightly"
+      args:
+        - "--worker.bufferSizeInBytes=5"
