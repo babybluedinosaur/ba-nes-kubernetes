@@ -11,6 +11,8 @@ import io.javaoperatorsdk.operator.api.reconciler.Context;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
@@ -20,19 +22,19 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
         this.client = client;
     }
 
-    public UpdateControl<NesTopology> reconcile(NesTopology primary, Context<NesTopology> context) {
+    public UpdateControl<NesTopology> reconcile(NesTopology desired, Context<NesTopology> context) {
         // Create a deployment and service for each worker
-        for (Container container : createContainers(primary)) {
-            createDeployment(primary, container);
-            createService(primary, container);
+        for (Container container : createContainers(desired)) {
+            createDeployment(desired, container);
+            createService(desired, container);
         }
-
+        cleanup(desired);
         return UpdateControl.noUpdate();
     }
 
-    public List<Container> createContainers(NesTopology primary) {
+    public List<Container> createContainers(NesTopology desired) {
         List<Container> containers = new ArrayList<>();
-        for (WorkerSpec workerSpec : primary.getSpec().getWorkerSpecs()) {
+        for (WorkerSpec workerSpec : desired.getSpec().getWorkerSpecs()) {
             Container container = new Container();
             container.setName(workerSpec.getName());
             container.setImage(workerSpec.getImage());
@@ -43,7 +45,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
         return containers;
     }
 
-    public void createDeployment(NesTopology primary, Container container) {
+    public void createDeployment(NesTopology desired, Container container) {
         String name = container.getName();
         Deployment deployment = new DeploymentBuilder()
                 .withNewMetadata().withName(name).endMetadata()
@@ -59,11 +61,11 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
                 .build();
 
         System.out.println("creating deployment...: " + deployment.getMetadata().getName());
-        client.apps().deployments().inNamespace(primary.getMetadata().getNamespace()).createOrReplace(deployment);
+        client.apps().deployments().inNamespace(desired.getMetadata().getNamespace()).createOrReplace(deployment);
         System.out.println("deployment created successfully");
     }
 
-    public void createService(NesTopology primary, Container container) {
+    public void createService(NesTopology desired, Container container) {
         Service service = new ServiceBuilder()
                 .withNewMetadata().withName(container.getName() + "-service").endMetadata()
                 .withNewSpec()
@@ -77,7 +79,36 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
                 .build();
 
         System.out.println("creating service...: " + service.getMetadata().getName());
-        client.services().inNamespace(primary.getMetadata().getNamespace()).createOrReplace(service);
+        client.services().inNamespace(desired.getMetadata().getNamespace()).createOrReplace(service);
         System.out.println("service created successfully");
+    }
+
+    //Delete obsolete deployments and services by comparing current state with the desired state
+    public void cleanup(NesTopology desired) {
+        List<Deployment> currentDeployments = client.apps().deployments()
+                .inNamespace(desired.getMetadata().getNamespace())
+                .list()
+                .getItems();
+        Set<String> desiredNames = desired.getSpec().getWorkerSpecs()
+                .stream()
+                .map(WorkerSpec::getName)
+                .collect(Collectors.toSet());
+
+        for (Deployment deployment : currentDeployments) {
+            if(!desiredNames.contains(deployment.getMetadata().getName())) {
+                System.out.println("deleting deployment...: " + deployment.getMetadata().getName());
+                client.apps().deployments()
+                        .inNamespace(desired.getMetadata().getNamespace())
+                        .withName(deployment.getMetadata().getName())
+                        .delete();
+                System.out.println("deployment deleted successfully");
+                System.out.println("deleting service...: " + deployment.getMetadata().getName() + "-service");
+                client.services()
+                        .inNamespace(deployment.getMetadata().getNamespace())
+                        .withName(deployment.getMetadata().getName() + "-service")
+                        .delete();
+                System.out.println("service deleted successfully");
+            }
+        }
     }
 }
