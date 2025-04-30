@@ -1,6 +1,7 @@
 package org.acme;
 
 import io.fabric8.kubernetes.api.model.Container;
+import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServiceBuilder;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -10,6 +11,7 @@ import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -39,6 +41,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
             container.setName(workerSpec.getName());
             container.setImage(workerSpec.getImage());
             container.setArgs(workerSpec.getArgs());
+            container.setPorts(Arrays.asList(new ContainerPortBuilder().withContainerPort(8080).build())); // for experiment
             containers.add(container);
             System.out.println(" - " + container.getName() + " : " + container.getImage());
         }
@@ -61,7 +64,11 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
                 .build();
 
         System.out.println("creating deployment...: " + deployment.getMetadata().getName());
-        client.apps().deployments().inNamespace(desired.getMetadata().getNamespace()).createOrReplace(deployment);
+        try {
+            client.apps().deployments().inNamespace(desired.getMetadata().getNamespace()).createOrReplace(deployment);
+        } catch (Exception e) {
+            System.out.println("error creating deployment: " + e.getMessage());
+        }
         System.out.println("deployment created successfully");
     }
 
@@ -71,7 +78,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
                 .withNewSpec()
                 .addToSelector("app", container.getName())
                 .addNewPort()
-                .withPort(80)
+                .withPort(8080) // testing for experiment
                 .withNewTargetPort(8080)
                 .endPort()
                 .withType("ClusterIP") // we only communicate inside cluster
@@ -79,7 +86,11 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
                 .build();
 
         System.out.println("creating service...: " + service.getMetadata().getName());
-        client.services().inNamespace(desired.getMetadata().getNamespace()).createOrReplace(service);
+        try {
+            client.services().inNamespace(desired.getMetadata().getNamespace()).createOrReplace(service);
+        } catch (Exception e) {
+            System.out.println("error creating service: " + e.getMessage());
+        }
         System.out.println("service created successfully");
     }
 
