@@ -4,9 +4,6 @@ metadata:
   name: test-topology
 spec:
   workerSpecs:
-    - name: "upstream"
-      image: "sidondocker/sender:latest"
-      args: []
-    - name: "downstream"
-      image: "sidondocker/receiver:latest"
-      args: []
+    - name: "worker2"
+      image: "nebulastream/worker:distributed"
+      capacity: 10

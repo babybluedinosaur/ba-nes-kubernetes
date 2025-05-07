@@ -6,29 +6,26 @@ public class WorkerSpec {
 
     private String name;
     private String image;
-    private List<String> args;
+    private final String data = "--data=0.0.0.0:9090";
+    private int capacity;
 
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public List<String> getArgs() {
-        return args;
-    }
-
-    public void setArgs(List<String> args) {
-        this.args = args;
     }
 
     public String getImage() {
         return image;
     }
 
-    public void setImage(String image) {
-        this.image = image;
+    public String getData() {
+        return data;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void print() {
+        System.out.println(" - " + name + " : " + image + ":" + capacity);
     }
 }

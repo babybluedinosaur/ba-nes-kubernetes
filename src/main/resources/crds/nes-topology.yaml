@@ -24,10 +24,9 @@ spec:
                         type: string
                       image:
                         type: string
-                      args: # arguments for the worker
-                        type: array
-                        items:
-                          type: string
+                      capacity:
+                        type: integer
+                      # sinks, physical
   scope: Namespaced
   names:
     plural: nes-topologies

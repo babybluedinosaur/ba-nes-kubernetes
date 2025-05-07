@@ -10,22 +10,21 @@ import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
     io.fabric8.kubernetes.client.KubernetesClient client;
+    Map<String, WorkerSpec> workerSpecMap;
 
     public NesTopologyReconciler(io.fabric8.kubernetes.client.KubernetesClient client) {
         this.client = client;
+        this.workerSpecMap = new HashMap<>(); // Contains latest workerSpecs
     }
 
+    // Create a deployment and service for each worker
     public UpdateControl<NesTopology> reconcile(NesTopology desired, Context<NesTopology> context) {
-        // Create a deployment and service for each worker
         for (Container container : createContainers(desired)) {
             createDeployment(desired, container);
             createService(desired, container);
@@ -37,13 +36,14 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
     public List<Container> createContainers(NesTopology desired) {
         List<Container> containers = new ArrayList<>();
         for (WorkerSpec workerSpec : desired.getSpec().getWorkerSpecs()) {
+            workerSpecMap.put(workerSpec.getName(), workerSpec); // Duplicates get overwritten
             Container container = new Container();
             container.setName(workerSpec.getName());
             container.setImage(workerSpec.getImage());
-            container.setArgs(workerSpec.getArgs());
+            container.setArgs(Collections.singletonList(workerSpec.getData())); // for now just the default data
             container.setPorts(Arrays.asList(new ContainerPortBuilder().withContainerPort(8080).build())); // for experiment
             containers.add(container);
-            System.out.println(" - " + container.getName() + " : " + container.getImage());
+            workerSpec.print();
         }
         return containers;
     }
@@ -94,7 +94,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
         System.out.println("service created successfully");
     }
 
-    //Delete obsolete deployments and services by comparing current state with the desired state
+    // Delete obsolete deployments and services by comparing current state with the desired state
     public void cleanup(NesTopology desired) {
         List<Deployment> currentDeployments = client.apps().deployments()
                 .inNamespace(desired.getMetadata().getNamespace())
@@ -106,8 +106,9 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
                 .collect(Collectors.toSet());
 
         for (Deployment deployment : currentDeployments) {
-            if(!desiredNames.contains(deployment.getMetadata().getName())) {
-                System.out.println("deleting deployment...: " + deployment.getMetadata().getName());
+            String deploymentName = deployment.getMetadata().getName();
+            if(!desiredNames.contains(deploymentName)) {
+                System.out.println("deleting deployment...: " + deploymentName);
                 client.apps().deployments()
                         .inNamespace(desired.getMetadata().getNamespace())
                         .withName(deployment.getMetadata().getName())
@@ -116,7 +117,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
                 System.out.println("deleting service...: " + deployment.getMetadata().getName() + "-service");
                 client.services()
                         .inNamespace(deployment.getMetadata().getNamespace())
-                        .withName(deployment.getMetadata().getName() + "-service")
+                        .withName(deploymentName + "-service")
                         .delete();
                 System.out.println("service deleted successfully");
             }
