@@ -26,7 +26,20 @@ spec:
                         type: string
                       capacity:
                         type: integer
-                      # sinks, physical
+                      # sink and physical config generic
+                      sinks:
+                        type: object
+                        x-kubernetes-preserve-unknown-fields: true
+                      links:
+                        type: object
+                        properties:
+                          downstreams:
+                            type: array
+                            items:
+                              type: string
+                      physical:
+                        type: object
+                        x-kubernetes-preserve-unknown-fields: true
   scope: Namespaced
   names:
     plural: nes-topologies

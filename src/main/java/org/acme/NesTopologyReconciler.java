@@ -40,8 +40,11 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
             Container container = new Container();
             container.setName(workerSpec.getName());
             container.setImage(workerSpec.getImage());
-            container.setArgs(Collections.singletonList(workerSpec.getData())); // for now just the default data
-            container.setPorts(Arrays.asList(new ContainerPortBuilder().withContainerPort(8080).build())); // for experiment
+            container.setArgs(Collections.singletonList(workerSpec.getData())); // for now just the default data param
+            container.setPorts(Arrays.asList(
+                    new ContainerPortBuilder().withContainerPort(8080).build(), // for grpc
+                    new ContainerPortBuilder().withContainerPort(9090).build()  // for data
+            )); // for experiment
             containers.add(container);
             workerSpec.print();
         }

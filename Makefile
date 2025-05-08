@@ -5,19 +5,16 @@ update-replicas:
 	./edit_replicas.sh $(r)
 	mvn compile exec:java -Dexec.mainClass=org.acme.Runner
 
-apply-example:
-	kubectl apply -f src/main/resources/crds/nes-example.yaml
+apply-cr-topology:
+	kubectl apply -f src/main/resources/crs/cr-topology.yaml
 
-apply-crd:
-	kubectl apply -f src/main/resources/crds/nes-topology.yaml
+apply-crd-topology:
+	kubectl apply -f src/main/resources/crds/crd-topology.yaml
 
-apply-network:
-	kubectl apply -f src/main/resources/crds/nes-network.yaml
+delete-cr-topology:
+	kubectl delete -f src/main/resources/crs/cr-topology.yaml
 
-delete-example:
-	kubectl delete -f src/main/resources/crds/nes-example.yaml
-
-delete-crd:
+delete-crd-topology:
 	kubectl delete -f src/main/resources/crds/nes-topology.yaml
 
 delete-deployments:
@@ -35,9 +32,6 @@ describe-pods:
 describe-cr:
 	kubectl describe nes-topology test-topology
 
-describe-network:
-	kubectl describe networkpolicy
-
 get-deployments:
 	kubectl get deployments
 
@@ -49,9 +43,6 @@ get-services:
 
 get-pods:
 	kubectl get pods -o wide
-
-get-network:
-	kubectl get networkpolicy
 
 logs:
 	kubectl logs deployment/test-topology

@@ -1,0 +1,9 @@
+apiVersion: nebulastream.com/v1
+kind: NesTopology
+metadata:
+  name: test-topology
+spec:
+  workerSpecs:
+    - name: "worker2"
+      image: "nebulastream/worker:distributed"
+      capacity: 10
