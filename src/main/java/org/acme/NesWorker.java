@@ -4,15 +4,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.List;
 
-public class WorkerSpec {
+// This class represents the config of a NES worker
+public class NesWorker {
 
     private String name;
     private String image;
-    private final String data = "--data=0.0.0.0:9090";
     private int capacity;
-    private JsonNode sinks;
-    private String links;
-    private JsonNode physical;
+    private List<JsonNode> sinks;
+    private Links links;
+    private List<JsonNode> physical;
 
 
     public String getName() {
@@ -23,23 +23,19 @@ public class WorkerSpec {
         return image;
     }
 
-    public String getData() {
-        return data;
-    }
-
     public int getCapacity() {
         return capacity;
     }
 
-    public JsonNode getSinks() {
+    public List<JsonNode> getSinks() {
         return sinks;
     }
 
-    public String getLinks() {
+    public Links getLinks() {
         return links;
     }
 
-    public JsonNode getPhysical() {
+    public List<JsonNode> getPhysical() {
         return physical;
     }
 

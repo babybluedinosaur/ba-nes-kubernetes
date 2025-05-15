@@ -10,43 +10,44 @@ import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
     io.fabric8.kubernetes.client.KubernetesClient client;
-    Map<String, WorkerSpec> workerSpecMap;
+    Map<String, NesWorker> workerMap;
 
     public NesTopologyReconciler(io.fabric8.kubernetes.client.KubernetesClient client) {
         this.client = client;
-        this.workerSpecMap = new HashMap<>(); // Contains latest workerSpecs
+        this.workerMap = new HashMap<>(); // Contains latest workerSpecs
     }
 
     // Create a deployment and service for each worker
-    public UpdateControl<NesTopology> reconcile(NesTopology desired, Context<NesTopology> context) {
+    public UpdateControl<NesTopology> reconcile(NesTopology desired, Context<NesTopology> context) throws IOException {
         for (Container container : createContainers(desired)) {
             createDeployment(desired, container);
             createService(desired, container);
         }
+        TopologyConverter topologyConverter = new TopologyConverter("src/main/resources/crs/convert-source.yaml", client);
         cleanup(desired);
         return UpdateControl.noUpdate();
     }
 
     public List<Container> createContainers(NesTopology desired) {
         List<Container> containers = new ArrayList<>();
-        for (WorkerSpec workerSpec : desired.getSpec().getWorkerSpecs()) {
-            workerSpecMap.put(workerSpec.getName(), workerSpec); // Duplicates get overwritten
+        for (NesWorker worker : desired.getSpec().getNodes()) {
+            workerMap.put(worker.getName(), worker); // Duplicates get overwritten
             Container container = new Container();
-            container.setName(workerSpec.getName());
-            container.setImage(workerSpec.getImage());
-            container.setArgs(Collections.singletonList(workerSpec.getData())); // for now just the default data param
+            container.setName(worker.getName());
+            container.setImage(worker.getImage());
             container.setPorts(Arrays.asList(
-                    new ContainerPortBuilder().withContainerPort(8080).build(), // for grpc
-                    new ContainerPortBuilder().withContainerPort(9090).build()  // for data
-            )); // for experiment
+                    new ContainerPortBuilder().withContainerPort(8080).build(),
+                    new ContainerPortBuilder().withContainerPort(9090).build()
+            ));
             containers.add(container);
-            workerSpec.print();
+            worker.print();
         }
         return containers;
     }
@@ -76,13 +77,21 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
     }
 
     public void createService(NesTopology desired, Container container) {
+        String name = container.getName();
+        System.out.println(name);
         Service service = new ServiceBuilder()
-                .withNewMetadata().withName(container.getName() + "-service").endMetadata()
+                .withNewMetadata().withName(name + "-service").endMetadata()
                 .withNewSpec()
-                .addToSelector("app", container.getName())
+                .addToSelector("app", name)
                 .addNewPort()
-                .withPort(8080) // testing for experiment
+                .withName("grpc")
+                .withPort(8080)
                 .withNewTargetPort(8080)
+                .endPort()
+                .addNewPort()
+                .withName("connection")
+                .withPort(9090)
+                .withNewTargetPort(9090)
                 .endPort()
                 .withType("ClusterIP") // we only communicate inside cluster
                 .endSpec()
@@ -103,9 +112,9 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
                 .inNamespace(desired.getMetadata().getNamespace())
                 .list()
                 .getItems();
-        Set<String> desiredNames = desired.getSpec().getWorkerSpecs()
+        Set<String> desiredNames = desired.getSpec().getNodes()
                 .stream()
-                .map(WorkerSpec::getName)
+                .map(NesWorker::getName)
                 .collect(Collectors.toSet());
 
         for (Deployment deployment : currentDeployments) {

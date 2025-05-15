@@ -6,7 +6,8 @@ update-replicas:
 	mvn compile exec:java -Dexec.mainClass=org.acme.Runner
 
 apply-cr-topology:
-	kubectl apply -f src/main/resources/crs/cr-topology.yaml
+	#kubectl apply -f src/main/resources/crs/cr-topology.yaml
+	kubectl apply -f src/main/resources/crs/convert-source.yaml
 
 apply-crd-topology:
 	kubectl apply -f src/main/resources/crds/crd-topology.yaml

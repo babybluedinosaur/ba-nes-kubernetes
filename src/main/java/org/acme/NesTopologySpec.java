@@ -1,16 +1,25 @@
 package org.acme;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.util.List;
 
 public class NesTopologySpec {
 
-    private List<WorkerSpec> workerSpecs;
+    private List<NesWorker> workers;
+    private List<JsonNode> logical;
 
-    public List<WorkerSpec> getWorkerSpecs() {
-        return workerSpecs;
+    public List<NesWorker> getNodes() {
+        return workers;
     }
 
-    public void setWorkerSpecs(List<WorkerSpec> workerSpecs) {
-        this.workerSpecs = workerSpecs;
+    public List<JsonNode> getLogical() {
+        return logical;
     }
+
+    public void setNodes(List<NesWorker> workers) {
+        this.workers = workers;
+    }
+
+    public void setLogical(List<JsonNode> logical) { this.logical = logical; }
 }

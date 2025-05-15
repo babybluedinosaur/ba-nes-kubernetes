@@ -15,7 +15,12 @@ spec:
             spec:
               type: object
               properties:
-                workerSpecs:
+                logical:
+                  type: array
+                  items:
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                nodes: # NES Worker nodes
                   type: array # we want several workers
                   items:
                     type: object
@@ -28,8 +33,10 @@ spec:
                         type: integer
                       # sink and physical config generic
                       sinks:
-                        type: object
-                        x-kubernetes-preserve-unknown-fields: true
+                        type: array
+                        items:
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
                       links:
                         type: object
                         properties:
@@ -38,8 +45,10 @@ spec:
                             items:
                               type: string
                       physical:
-                        type: object
-                        x-kubernetes-preserve-unknown-fields: true
+                        type: array
+                        items:
+                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
   scope: Namespaced
   names:
     plural: nes-topologies
