@@ -11,7 +11,6 @@ public class Runner {
     private static final Logger log = LoggerFactory.getLogger(Runner.class);
 
     public static void main(String[] args) {
-        log.info("Starting the operator...");
         Operator operator = new Operator();
         operator.register(new NesTopologyReconciler(new DefaultKubernetesClient()));
         operator.start();

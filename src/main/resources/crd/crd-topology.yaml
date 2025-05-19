@@ -15,7 +15,7 @@ spec:
             spec:
               type: object
               properties:
-                logical:
+                logical: # logical generic
                   type: array
                   items:
                     type: object

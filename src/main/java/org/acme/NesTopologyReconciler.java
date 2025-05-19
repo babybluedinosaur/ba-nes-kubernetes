@@ -30,7 +30,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
             createDeployment(desired, container);
             createService(desired, container);
         }
-        TopologyConverter topologyConverter = new TopologyConverter("src/main/resources/crs/convert-source.yaml", client);
+        TopologyConverter topologyConverter = new TopologyConverter("src/main/resources/cr/convert-source.yaml", client);
         cleanup(desired);
         return UpdateControl.noUpdate();
     }
@@ -42,6 +42,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
             Container container = new Container();
             container.setName(worker.getName());
             container.setImage(worker.getImage());
+            container.setArgs(Collections.singletonList(worker.getData())); // for now just the default data param
             container.setPorts(Arrays.asList(
                     new ContainerPortBuilder().withContainerPort(8080).build(),
                     new ContainerPortBuilder().withContainerPort(9090).build()

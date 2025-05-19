@@ -38,6 +38,8 @@ spec:
           parserConfig:
             type: CSV
           sourceConfig:
-            socketHost: 127.0.0.1
+            socketHost: tcp-server-service
             socketPort: 6666
             type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET

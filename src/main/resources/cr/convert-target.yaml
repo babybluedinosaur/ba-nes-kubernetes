@@ -8,8 +8,8 @@ logical:
   - type: "UINT64"
     name: "timestamp"
 nodes:
-- connection: "10.97.244.125:9090"
-  grpc: "10.97.244.125:8080"
+- connection: "worker1-service:9090"
+  grpc: "worker1-service:8080"
   capacity: 10
   sinks:
   - name: "fast_csv_sink"
@@ -22,17 +22,19 @@ nodes:
     config:
       ingestion: 1000
       inputFormat: "CSV"
-- connection: "10.97.66.165:9090"
-  grpc: "10.97.66.165:8080"
+- connection: "worker2-service:9090"
+  grpc: "worker2-service:8080"
   capacity: 0
   links:
     downstreams:
-    - "worker1"
+    - "worker1-service:9090"
   physical:
   - logical: "stream"
     parserConfig:
       type: "CSV"
     sourceConfig:
-      socketHost: "127.0.0.1"
+      socketHost: "tcp-server-service"
       socketPort: 6666
       type: "TCP"
+      socketType: "SOCK_STREAM"
+      socketDomain: "AF_INET"

@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: nebuli
+spec:
+  template:
+    spec:
+      containers:
+        - name: nebuli
+          image: nebulastream/nebuli:distributed
+          args:
+            [
+              "--topology",
+              "/config/convert-target.yaml",
+              "register",
+              "-x",
+              "SELECT * FROM stream INTO fast_csv_sink;"
+            ]
+          volumeMounts:
+            - name: config-volume
+              mountPath: /config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: topology-config
+      restartPolicy: Never
