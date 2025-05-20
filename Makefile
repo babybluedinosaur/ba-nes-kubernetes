@@ -13,7 +13,7 @@ apply-crd-topology:
 	kubectl apply -f src/main/resources/crds/crd-topology.yaml
 
 apply-server:
-	kubectl apply -f src/main/resources/crs/server.yaml
+	kubectl apply -f src/main/resources/cr/server.yaml
 
 apply-server-service:
 	kubectl apply -f src/main/resources/svc/svc-server.yaml
@@ -26,13 +26,19 @@ apply-nebuli:
 	 kubectl apply -f src/main/resources/cr/nebuli.yaml
 
 delete-cr-topology:
-	kubectl delete -f src/main/resources/crs/cr-topology.yaml
+	kubectl delete -f src/main/resources/cr/cr-topology.yaml
 
 delete-crd-topology:
-	kubectl delete -f src/main/resources/crds/nes-topology.yaml
+	kubectl delete -f src/main/resources/crd/nes-topology.yaml
+
+delete-nebuli:
+	kubectl delete job nebuli
 
 delete-deployments:
 	kubectl delete deployment --all
+
+delete-server:
+	kubectl delete -f src/main/resources/cr/server.yaml
 
 describe-deployments:
 	kubectl describe deployments
@@ -58,6 +64,9 @@ get-services:
 get-pods:
 	kubectl get pods -o wide
 
+pod-yaml:
+	kubectl get pod $(pod) -o yaml > $(pod).yaml
+
 logs:
 	kubectl logs deployment/test-topology
 
@@ -69,3 +78,7 @@ watch-deployments:
 
 watch-pods:
 	watch kubectl get pods -o wide
+
+# kubectl run -it --rm --image=busybox debug -- sh
+# nc tcp-server-service 6666
+# apt-get update && apt-get install -y netcat-openbsd

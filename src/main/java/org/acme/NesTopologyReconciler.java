@@ -120,7 +120,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
         for (Deployment deployment : currentDeployments) {
             String deploymentName = deployment.getMetadata().getName();
-            if(!desiredNames.contains(deploymentName)) {
+            if(!desiredNames.contains(deploymentName) && !deploymentName.startsWith("tcp-server")) {
                 System.out.println("deleting deployment...: " + deploymentName);
                 client.apps().deployments()
                         .inNamespace(desired.getMetadata().getNamespace())

@@ -8,6 +8,5 @@ spec:
   ports:
     - protocol: TCP
       port: 6666
-      targetPort: 6666
+      targetPort: 9999
   type: ClusterIP
-  

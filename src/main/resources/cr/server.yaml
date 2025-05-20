@@ -16,5 +16,6 @@ spec:
       containers:
         - name: tcp-server
           image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
           ports:
-            - containerPort: 6666
+            - containerPort: 9999
