@@ -79,6 +79,8 @@ watch-deployments:
 watch-pods:
 	watch kubectl get pods -o wide
 
-# kubectl run -it --rm --image=busybox debug -- sh
+random-pod:
+	kubectl run -it --rm --image=busybox debug -- sh
+
 # nc tcp-server-service 6666
 # apt-get update && apt-get install -y netcat-openbsd

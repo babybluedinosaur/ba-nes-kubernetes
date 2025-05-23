@@ -9,7 +9,8 @@ public class NesWorker {
 
     private String name;
     private String image;
-    private final String data = "--data=0.0.0.0:9090";
+    private final String bind = "--bind=0.0.0.0:9090";
+    private String connection = "--connection=";
     private int capacity;
     private List<JsonNode> sinks;
     private Links links;
@@ -24,8 +25,12 @@ public class NesWorker {
         return image;
     }
 
-    public String getData() {
-        return data;
+    public String getBind() {
+        return bind;
+    }
+
+    public String getConnection() {
+        return connection;
     }
 
     public int getCapacity() {

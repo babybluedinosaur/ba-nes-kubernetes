@@ -27,8 +27,8 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
     // Create a deployment and service for each worker
     public UpdateControl<NesTopology> reconcile(NesTopology desired, Context<NesTopology> context) throws IOException {
         for (Container container : createContainers(desired)) {
-            createDeployment(desired, container);
             createService(desired, container);
+            createDeployment(desired, container);
         }
         TopologyConverter topologyConverter = new TopologyConverter("src/main/resources/cr/convert-source.yaml", client);
         cleanup(desired);
@@ -38,17 +38,20 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
     public List<Container> createContainers(NesTopology desired) {
         List<Container> containers = new ArrayList<>();
         for (NesWorker worker : desired.getSpec().getNodes()) {
-            workerMap.put(worker.getName(), worker); // Duplicates get overwritten
+            String name = worker.getName();
+            workerMap.put(name, worker); // Duplicates get overwritten
             Container container = new Container();
-            container.setName(worker.getName());
+            container.setName(name);
             container.setImage(worker.getImage());
-            container.setArgs(Collections.singletonList(worker.getData())); // for now just the default data param
+            container.setArgs(Arrays.asList(
+                    worker.getBind(),
+                    worker.getConnection() + name + "-service:9090"));
+            container.setImagePullPolicy("Always");
             container.setPorts(Arrays.asList(
                     new ContainerPortBuilder().withContainerPort(8080).build(),
                     new ContainerPortBuilder().withContainerPort(9090).build()
             ));
             containers.add(container);
-            worker.print();
         }
         return containers;
     }
