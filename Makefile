@@ -25,6 +25,10 @@ apply-nebuli:
 	 kubectl create configmap topology-config --from-file=src/main/resources/cr/convert-target.yaml --dry-run=client -o yaml | kubectl apply -f -
 	 kubectl apply -f src/main/resources/cr/nebuli.yaml
 
+apply-nebuli-queries:
+	kubectl apply -f src/main/resources/cr/nebuli-queries.yaml
+
+
 delete-cr-topology:
 	kubectl delete -f src/main/resources/cr/cr-topology.yaml
 
@@ -36,6 +40,9 @@ delete-nebuli:
 
 delete-deployments:
 	kubectl delete deployment --all
+
+delete-pods:
+	kubectl delete pod --all
 
 delete-server:
 	kubectl delete -f src/main/resources/cr/server.yaml
@@ -66,6 +73,17 @@ get-pods:
 
 pod-yaml:
 	kubectl get pod $(pod) -o yaml > $(pod).yaml
+
+fresh-node:
+	make delete-deployments
+	make delete-pods
+	make apply-server
+	make apply-server-service
+	make run
+
+copy-nebuli-queries:
+	kubectl cp nebuli-queries-reader:/tmp ./
+
 
 logs:
 	kubectl logs deployment/test-topology

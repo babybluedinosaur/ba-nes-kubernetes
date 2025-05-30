@@ -10,17 +10,25 @@ spec:
           image: nebulastream/nebuli:distributed
           args:
             [
-              "--topology",
-              "/config/convert-target.yaml",
-              "register",
-              "-x",
-              "SELECT * FROM stream INTO fast_csv_sink;"
+#              "--topology",
+#              "/config/convert-target.yaml",
+#              "register",
+#              "-x",
+#              "SELECT * FROM stream INTO fast_csv_sink;"
+#              "stop",
+#              "fileu4PlQN"
+              "--help"
             ]
           volumeMounts:
             - name: config-volume
               mountPath: /config
+            - name: queries-volume
+              mountPath: /tmp
       volumes:
         - name: config-volume
           configMap:
             name: topology-config
-      restartPolicy: Never
+        - name: queries-volume
+          persistentVolumeClaim:
+            claimName: queries-pvc
+      restartPolicy: OnFailure
