@@ -9,6 +9,9 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
+import org.acme.setup.PVCBuilder;
+import org.acme.setup.ReaderJobBuilder;
+import org.acme.worker.NesWorker;
 
 import java.io.IOException;
 import java.util.*;
@@ -26,6 +29,8 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
     // Create a deployment and service for each worker
     public UpdateControl<NesTopology> reconcile(NesTopology desired, Context<NesTopology> context) throws IOException {
+        PVCBuilder.spawnPVC(1, client);
+        ReaderJobBuilder jobBuilder = new ReaderJobBuilder(client);
         for (Container container : createContainers(desired)) {
             createService(desired, container);
             createDeployment(desired, container);
@@ -43,10 +48,10 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
             Container container = new Container();
             container.setName(name);
             container.setImage(worker.getImage());
+            container.setImagePullPolicy("Always");
             container.setArgs(Arrays.asList(
                     worker.getBind(),
                     worker.getConnection() + name + "-service:9090"));
-            container.setImagePullPolicy("Always");
             container.setPorts(Arrays.asList(
                     new ContainerPortBuilder().withContainerPort(8080).build(),
                     new ContainerPortBuilder().withContainerPort(9090).build()
@@ -71,20 +76,17 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
                 .endSpec()
                 .build();
 
-        System.out.println("creating deployment...: " + deployment.getMetadata().getName());
         try {
             client.apps().deployments().inNamespace(desired.getMetadata().getNamespace()).createOrReplace(deployment);
         } catch (Exception e) {
             System.out.println("error creating deployment: " + e.getMessage());
         }
-        System.out.println("deployment created successfully");
     }
 
     public void createService(NesTopology desired, Container container) {
         String name = container.getName();
-        System.out.println(name);
         Service service = new ServiceBuilder()
-                .withNewMetadata().withName(name + "-service").endMetadata()
+                .withNewMetadata().withName(name + "-service").withLabels(Map.of("topology", "nes")).endMetadata()
                 .withNewSpec()
                 .addToSelector("app", name)
                 .addNewPort()
@@ -101,13 +103,11 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
                 .endSpec()
                 .build();
 
-        System.out.println("creating service...: " + service.getMetadata().getName());
         try {
             client.services().inNamespace(desired.getMetadata().getNamespace()).createOrReplace(service);
         } catch (Exception e) {
             System.out.println("error creating service: " + e.getMessage());
         }
-        System.out.println("service created successfully");
     }
 
     // Delete obsolete deployments and services by comparing current state with the desired state
@@ -123,7 +123,8 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
         for (Deployment deployment : currentDeployments) {
             String deploymentName = deployment.getMetadata().getName();
-            if(!desiredNames.contains(deploymentName) && !deploymentName.startsWith("tcp-server")) {
+            if (!desiredNames.contains(deploymentName) && !deploymentName.startsWith("tcp-server")
+                    && !deploymentName.startsWith("nebuli-queries-reader")) {
                 System.out.println("deleting deployment...: " + deploymentName);
                 client.apps().deployments()
                         .inNamespace(desired.getMetadata().getNamespace())

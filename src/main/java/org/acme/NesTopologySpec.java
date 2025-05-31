@@ -1,6 +1,7 @@
 package org.acme;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.acme.worker.NesWorker;
 
 import java.util.List;
 

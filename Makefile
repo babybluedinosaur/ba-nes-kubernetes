@@ -13,7 +13,7 @@ apply-crd-topology:
 	kubectl apply -f src/main/resources/crds/crd-topology.yaml
 
 apply-server:
-	kubectl apply -f src/main/resources/cr/server.yaml
+	kubectl apply -f src/main/resources/physical-sources/server.yaml
 
 apply-server-service:
 	kubectl apply -f src/main/resources/svc/svc-server.yaml
@@ -27,7 +27,6 @@ apply-nebuli:
 
 apply-nebuli-queries:
 	kubectl apply -f src/main/resources/cr/nebuli-queries.yaml
-
 
 delete-cr-topology:
 	kubectl delete -f src/main/resources/cr/cr-topology.yaml
@@ -44,8 +43,20 @@ delete-deployments:
 delete-pods:
 	kubectl delete pod --all
 
+delete-pvcs:
+	kubectl delete pvc --all
+
 delete-server:
 	kubectl delete -f src/main/resources/cr/server.yaml
+
+delete-services:
+	kubectl delete svc -l topology=nes
+
+delete-all:
+	make delete-pvcs
+	make delete-deployments
+	make delete-pods
+	make delete-services
 
 describe-deployments:
 	kubectl describe deployments

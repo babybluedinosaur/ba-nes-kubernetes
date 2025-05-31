@@ -38,7 +38,7 @@ spec:
           parserConfig:
             type: CSV
           sourceConfig:
-            socketHost: tcp-server-service
+            socketHost: tcp-server
             socketPort: 6666
             type: TCP
             socketType: SOCK_STREAM

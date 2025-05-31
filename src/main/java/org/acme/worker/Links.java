@@ -1,4 +1,4 @@
-package org.acme;
+package org.acme.worker;
 
 import java.util.ArrayList;
 import java.util.List;

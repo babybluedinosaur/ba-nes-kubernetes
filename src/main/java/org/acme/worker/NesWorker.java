@@ -1,4 +1,4 @@
-package org.acme;
+package org.acme.worker;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

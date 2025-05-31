@@ -3,13 +3,11 @@ kind: Deployment
 metadata:
   name: tcp-server
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: tcp-server
   template:
     metadata:
-      name: tcp-server
       labels:
         app: tcp-server
     spec:
