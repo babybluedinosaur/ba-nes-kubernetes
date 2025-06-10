@@ -1,7 +1,7 @@
-package org.acme;
+package org.acme.TopologyReconciler;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import org.acme.worker.NesWorker;
+import org.acme.TopologyReconciler.Worker.NesWorker;
 
 import java.util.List;
 

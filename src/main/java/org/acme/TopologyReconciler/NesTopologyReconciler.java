@@ -1,4 +1,4 @@
-package org.acme;
+package org.acme.TopologyReconciler;
 
 import io.fabric8.kubernetes.api.model.Container;
 import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
@@ -9,9 +9,9 @@ import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
-import org.acme.setup.PVCBuilder;
-import org.acme.setup.ReaderJobBuilder;
-import org.acme.worker.NesWorker;
+import org.acme.TopologyReconciler.Utils.ConfigBuilder;
+import org.acme.TopologyReconciler.Utils.TopologyConverter;
+import org.acme.TopologyReconciler.Worker.NesWorker;
 
 import java.io.IOException;
 import java.util.*;
@@ -29,13 +29,13 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
     // Create a deployment and service for each worker
     public UpdateControl<NesTopology> reconcile(NesTopology desired, Context<NesTopology> context) throws IOException {
-        PVCBuilder.spawnPVC(1, client);
-        ReaderJobBuilder jobBuilder = new ReaderJobBuilder(client);
         for (Container container : createContainers(desired)) {
             createService(desired, container);
             createDeployment(desired, container);
         }
         TopologyConverter topologyConverter = new TopologyConverter("src/main/resources/cr/convert-source.yaml", client);
+        ConfigBuilder configBuilder = new ConfigBuilder();
+        configBuilder.buildConverterMap(client);
         cleanup(desired);
         return UpdateControl.noUpdate();
     }
@@ -114,6 +114,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
     public void cleanup(NesTopology desired) {
         List<Deployment> currentDeployments = client.apps().deployments()
                 .inNamespace(desired.getMetadata().getNamespace())
+                .withLabel("topology", "nes")
                 .list()
                 .getItems();
         Set<String> desiredNames = desired.getSpec().getNodes()

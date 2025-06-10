@@ -1,4 +1,4 @@
-package org.acme.worker;
+package org.acme.TopologyReconciler.Worker;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

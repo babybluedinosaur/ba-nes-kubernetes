@@ -1,8 +1,7 @@
-package org.acme;
+package org.acme.TopologyReconciler.Utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.introspect.AnnotationCollector;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
@@ -21,6 +20,7 @@ import java.util.Map;
 public class TopologyConverter {
 
     io.fabric8.kubernetes.client.KubernetesClient client;
+    String namespace = "default";
 
     public TopologyConverter(String cr, io.fabric8.kubernetes.client.KubernetesClient client) throws IOException {
         try {
@@ -42,7 +42,7 @@ public class TopologyConverter {
                 ObjectNode tmpNode = mapper.createObjectNode();
 
                 //add new fields
-                Service service = this.client.services().inNamespace("default").
+                Service service = this.client.services().inNamespace(namespace).
                         withName(nameNode.asText() + "-service").get();
                 String name = service.getMetadata().getName();
                 tmpNode.put("connection", name + ":" + "9090");
@@ -68,13 +68,11 @@ public class TopologyConverter {
 
                 }
 
-                //TODO: neue function wo wir services auch für die sources erstellen
                 if (node.has("physical")) {
                     ArrayNode physicalArray = (ArrayNode) node.get("physical");
                     for (int j = 0; j < physicalArray.size(); j++) {
                         JsonNode physicalNode = physicalArray.get(j);
                         createPhysicalService(physicalNode);
-                        //TODO: an socketHost "-service" ranhängen
                     }
 
                 }
@@ -134,7 +132,7 @@ public class TopologyConverter {
                 .build();
 
         try {
-            this.client.services().inNamespace("default").createOrReplace(service);
+            this.client.services().inNamespace(namespace).createOrReplace(service);
         } catch (Exception e) {
             System.out.println("error creating service: " + e.getMessage());
         }

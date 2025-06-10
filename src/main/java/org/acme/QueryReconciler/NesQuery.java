@@ -1,4 +1,4 @@
-package org.acme;
+package org.acme.QueryReconciler;
 
 import io.fabric8.kubernetes.client.CustomResource;
 import io.fabric8.kubernetes.api.model.Namespaced;
@@ -9,7 +9,7 @@ import io.fabric8.kubernetes.model.annotation.Version;
 
 @Group("nebulastream.com")
 @Version("v1")
-@Kind("NesTopology")
-@Plural("nes-topologies")
-public class NesTopology extends CustomResource<NesTopologySpec,NesTopologyStatus> implements Namespaced {
+@Kind("NesQuery")
+@Plural("nes-queries")
+public class NesQuery extends CustomResource<NesQuerySpec,NesQueryStatus> implements Namespaced {
 }
