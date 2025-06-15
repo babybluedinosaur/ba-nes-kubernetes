@@ -9,7 +9,6 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServiceBuilder;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
@@ -22,9 +21,12 @@ public class TopologyConverter {
     io.fabric8.kubernetes.client.KubernetesClient client;
     String namespace = "default";
 
-    public TopologyConverter(String cr, io.fabric8.kubernetes.client.KubernetesClient client) throws IOException {
+    public TopologyConverter(io.fabric8.kubernetes.client.KubernetesClient client) {
+        this.client = client;
+    }
+
+    public String convertTopology(String cr) throws IOException {
         try {
-            this.client = client;
             // inital setup, get nodes section in custom resource
             YAMLFactory yamlFactory = new YAMLFactory();
             yamlFactory.disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER);
@@ -65,7 +67,6 @@ public class TopologyConverter {
                             downstreamArray.set(j, new TextNode(workerService));
                         }
                     }
-
                 }
 
                 if (node.has("physical")) {
@@ -85,16 +86,16 @@ public class TopologyConverter {
                 }
                 nodesArray.set(i, tmpNode);
             }
-
-            File outputFile = new File("src/main/resources/cr/convert-target.yaml");
-            yamlMapper.writeValue(outputFile, spec);
+            return yamlMapper.writeValueAsString(spec);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        return "";
     }
 
+    // Creates Service for a phyiscal source
     private void createPhysicalService(JsonNode physicalNode) throws Exception {
         if (physicalNode.has("sourceConfig")) {
             JsonNode sourceConfig = physicalNode.get("sourceConfig");

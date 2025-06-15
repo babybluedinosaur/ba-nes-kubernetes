@@ -10,15 +10,16 @@ import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import org.acme.TopologyReconciler.Utils.ConfigBuilder;
-import org.acme.TopologyReconciler.Utils.TopologyConverter;
 import org.acme.TopologyReconciler.Worker.NesWorker;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
+    private static final Logger logger = LogManager.getLogger(NesTopologyReconciler.class);
     io.fabric8.kubernetes.client.KubernetesClient client;
     Map<String, NesWorker> workerMap;
 
@@ -29,13 +30,16 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
     // Create a deployment and service for each worker
     public UpdateControl<NesTopology> reconcile(NesTopology desired, Context<NesTopology> context) throws IOException {
+        logger.info("Starting reconcile");
         for (Container container : createContainers(desired)) {
             createService(desired, container);
             createDeployment(desired, container);
         }
-        TopologyConverter topologyConverter = new TopologyConverter("src/main/resources/cr/convert-source.yaml", client);
         ConfigBuilder configBuilder = new ConfigBuilder();
-        configBuilder.buildConverterMap(client);
+        configBuilder.buildTargetMap(
+                desired.getMetadata().getAnnotations().get("topology-file-name"),
+                client
+        );
         cleanup(desired);
         return UpdateControl.noUpdate();
     }
@@ -79,7 +83,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
         try {
             client.apps().deployments().inNamespace(desired.getMetadata().getNamespace()).createOrReplace(deployment);
         } catch (Exception e) {
-            System.out.println("error creating deployment: " + e.getMessage());
+            logger.error("error creating deployment {}: {}", name, e.getMessage());
         }
     }
 
@@ -106,7 +110,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
         try {
             client.services().inNamespace(desired.getMetadata().getNamespace()).createOrReplace(service);
         } catch (Exception e) {
-            System.out.println("error creating service: " + e.getMessage());
+            logger.error("error creating service {}: {}", name, e.getMessage());
         }
     }
 
@@ -125,7 +129,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
         for (Deployment deployment : currentDeployments) {
             String deploymentName = deployment.getMetadata().getName();
             if (!desiredNames.contains(deploymentName) && !deploymentName.startsWith("tcp-server")
-                    && !deploymentName.startsWith("nebuli-queries-reader")) {
+            && !deploymentName.startsWith("query")) {
                 System.out.println("deleting deployment...: " + deploymentName);
                 client.apps().deployments()
                         .inNamespace(desired.getMetadata().getNamespace())

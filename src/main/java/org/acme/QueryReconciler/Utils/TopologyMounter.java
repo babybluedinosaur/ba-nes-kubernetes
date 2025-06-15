@@ -4,6 +4,8 @@ import io.fabric8.kubernetes.api.model.*;
 
 import java.io.IOException;
 
+// This class creates a volume, which contains the output of the TopologyConverter.
+// The volume is getting mounted into nebuli
 public class TopologyMounter {
 
     public static VolumeMount buildTopologyMap(io.fabric8.kubernetes.client.KubernetesClient client) throws IOException {

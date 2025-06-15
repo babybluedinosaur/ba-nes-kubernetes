@@ -6,7 +6,6 @@ update-replicas:
 	mvn compile exec:java -Dexec.mainClass=org.acme.Runner
 
 apply-cr-topology:
-	#kubectl apply -f src/main/resources/cr/cr-topology.yaml
 	kubectl apply -f src/main/resources/cr/convert-source.yaml
 
 apply-crd-topology:
@@ -25,8 +24,12 @@ apply-nebuli:
 	 kubectl create configmap topology-config --from-file=src/main/resources/cr/convert-target.yaml --dry-run=client -o yaml | kubectl apply -f -
 	 kubectl apply -f src/main/resources/cr/nebuli.yaml
 
-apply-nebuli-queries:
-	kubectl apply -f src/main/resources/cr/nebuli-queries.yaml
+apply-queries:
+	kubectl apply -f src/main/resources/cr/queries/query.yaml
+	kubectl apply -f src/main/resources/cr/queries/query-2.yaml
+	kubectl apply -f src/main/resources/cr/queries/query-3.yaml
+	kubectl apply -f src/main/resources/cr/queries/query-4.yaml
+	kubectl apply -f src/main/resources/cr/queries/query-5.yaml
 
 delete-cr-topology:
 	kubectl delete -f src/main/resources/cr/cr-topology.yaml
@@ -47,7 +50,7 @@ delete-pvcs:
 	kubectl delete pvc --all
 
 delete-queries:
-	kubectl delete deployment query-1
+	kubectl delete deployment -l query=nebuli
 
 delete-server:
 	kubectl delete -f src/main/resources/cr/server.yaml
@@ -57,6 +60,9 @@ delete-services:
 
 delete-configmap:
 	kubectl delete configmap -l topology=nes
+
+delete-query-cr:
+	kubectl delete nes-queries.nebulastream.com $(query)
 
 delete-all:
 	make delete-deployments
@@ -101,6 +107,9 @@ get-pv:
 get-crds:
 	kubectl get crd
 
+get-query-cr:
+	kubectl get nes-queries.nebulastream.com
+
 pod-yaml:
 	kubectl get pod $(pod) -o yaml > $(pod).yaml
 
@@ -111,12 +120,10 @@ fresh-node:
 	make delete-deployments
 	make delete-pods
 	make apply-server
-	make apply-server-service
 	make run
 
 copy-nebuli-queries:
 	kubectl cp nebuli-queries-reader:/tmp ./
-
 
 logs:
 	kubectl logs deployment/test-topology
@@ -133,9 +140,9 @@ watch-pods:
 random-pod:
 	kubectl run -it --rm --image=busybox debug -- sh
 
-# nc tcp-server-service 6666
-# apt-get update && apt-get install -y netcat-openbsd
-
 docker-push:
 	docker build --no-cache -t sidondocker/sido-nebuli .
 	docker push sidondocker/sido-nebuli
+
+# nc tcp-server-service 6666
+# apt-get update && apt-get install -y netcat-openbsd
