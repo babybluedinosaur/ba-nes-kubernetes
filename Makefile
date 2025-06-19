@@ -64,6 +64,12 @@ delete-configmap:
 delete-query-cr:
 	kubectl delete nes-queries.nebulastream.com $(query)
 
+delete-topologies-cr:
+	kubectl delete nes-topologies.nebulastream.com --all
+
+delete-queries-cr:
+	kubectl delete nes-queries.nebulastream.com --all
+
 delete-all:
 	make delete-deployments
 	make delete-pods
@@ -85,6 +91,9 @@ describe-crds:
 
 describe-cr:
 	kubectl describe nes-topology test-topology
+
+describe-configmap:
+	kubectl describe configmap
 
 get-deployments:
 	kubectl get deployments
@@ -109,6 +118,9 @@ get-crds:
 
 get-query-cr:
 	kubectl get nes-queries.nebulastream.com
+
+get-topology-cr:
+	kubectl get nes-topologies.nebulastream.com
 
 pod-yaml:
 	kubectl get pod $(pod) -o yaml > $(pod).yaml

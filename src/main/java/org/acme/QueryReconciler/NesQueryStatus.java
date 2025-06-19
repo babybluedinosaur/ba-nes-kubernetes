@@ -4,9 +4,6 @@ public class NesQueryStatus {
     // Obligatory, so we can stop certain queries by using their name
     private String deploymentName;
 
-    public NesQueryStatus() {
-    }
-
     public String getDeploymentName() {
         return deploymentName;
     }

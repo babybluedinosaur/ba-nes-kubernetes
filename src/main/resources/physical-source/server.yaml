@@ -17,3 +17,24 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 9999
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-2
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-2
+  template:
+    metadata:
+      labels:
+        app: tcp-server-2
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999

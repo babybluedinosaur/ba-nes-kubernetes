@@ -13,8 +13,9 @@ import io.fabric8.kubernetes.model.annotation.Version;
 @Plural("nes-queries")
 public class NesQuery extends CustomResource<NesQuerySpec,NesQueryStatus> implements Namespaced {
 
-    public NesQuery() {
-        super();
+    @Override
+    public NesQuerySpec getSpec() {
+        return super.getSpec();
     }
 
     @Override
@@ -25,10 +26,5 @@ public class NesQuery extends CustomResource<NesQuerySpec,NesQueryStatus> implem
     @Override
     public void setStatus(NesQueryStatus status) {
         super.setStatus(status);
-    }
-
-    @Override
-    protected NesQueryStatus initStatus() {
-        return super.initStatus();
     }
 }

@@ -6,9 +6,9 @@ import java.util.List;
 public class Links {
 
     private List<String> downstreams = new ArrayList<>();
+    private List<String> upstreams = new ArrayList<>();
 
-    public Links() {
-    }
+    public Links() {}
 
     public List<String> getDownstreams() {
         return downstreams;
@@ -17,4 +17,8 @@ public class Links {
     public void setDownstreams(List<String> downstreams) {
         this.downstreams = downstreams;
     }
+
+    public List<String> getUpstreams() { return upstreams; }
+
+    public void setUpstreams(List<String> upstreams) { this.upstreams = upstreams; }
 }

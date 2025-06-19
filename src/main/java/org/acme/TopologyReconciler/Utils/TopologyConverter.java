@@ -56,7 +56,6 @@ public class TopologyConverter {
                 originalNode.remove("image");
 
                 // adjust links for nebuli
-                // TODO: upstream support
                 if (node.has("links")) {
                     JsonNode downstream = node.get("links").get("downstreams");
                     if (downstream != null && downstream.isArray()) {
@@ -67,6 +66,17 @@ public class TopologyConverter {
                             downstreamArray.set(j, new TextNode(workerService));
                         }
                     }
+
+                    JsonNode upstream = node.get("links").get("upstreams");
+                    if (upstream != null && upstream.isArray()) {
+                        ArrayNode upstreamArray = (ArrayNode) upstream;
+                        for (int j = 0; j < upstreamArray.size(); j++) {
+                            String worker = upstreamArray.get(j).asText();
+                            String workerService = worker + "-service" + ":" + "9090";
+                            upstreamArray.set(j, new TextNode(workerService));
+                        }
+                    }
+
                 }
 
                 if (node.has("physical")) {
