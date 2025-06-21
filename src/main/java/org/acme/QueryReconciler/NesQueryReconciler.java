@@ -30,6 +30,8 @@ public class NesQueryReconciler implements Reconciler<NesQuery> {
 
         NesQueryStatus status = desired.getStatus();
         String deploymentName = "query-" + desired.getMetadata().getName();
+        // if we do not use this, the first query will always be ignored
+        boolean statusWasNull = false;
 
         // create status for query, important to stop later the query (see stopNebuli())
         if (status == null) {
@@ -37,7 +39,7 @@ public class NesQueryReconciler implements Reconciler<NesQuery> {
             status.setDeploymentName(deploymentName);
             desired.setStatus(status);
             logger.info("setting initial status for query: {}", desired.getMetadata().getName());
-            return UpdateControl.patchStatus(desired);
+            statusWasNull = true;
         }
 
         NesQuerySpec spec = desired.getSpec();
@@ -59,6 +61,10 @@ public class NesQueryReconciler implements Reconciler<NesQuery> {
             stopNebuli(desired);
         } else {
             logger.error("unsupported nebuli argument.");
+        }
+
+        if (statusWasNull) {
+            return UpdateControl.patchStatus(desired);
         }
 
         return UpdateControl.noUpdate();

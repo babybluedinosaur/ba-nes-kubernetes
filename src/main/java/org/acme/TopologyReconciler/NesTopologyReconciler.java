@@ -1,9 +1,6 @@
 package org.acme.TopologyReconciler;
 
-import io.fabric8.kubernetes.api.model.Container;
-import io.fabric8.kubernetes.api.model.ContainerPortBuilder;
-import io.fabric8.kubernetes.api.model.Service;
-import io.fabric8.kubernetes.api.model.ServiceBuilder;
+import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
@@ -15,7 +12,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
@@ -67,12 +63,15 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
     public void createDeployment(NesTopology desired, Container container) {
         String name = container.getName();
+        Map<String, String> labels = new HashMap<>();
+        labels.put("app", name);
+        labels.put("nes", "worker");
         Deployment deployment = new DeploymentBuilder()
-                .withNewMetadata().withName(name).endMetadata()
+                .withNewMetadata().withName(name).withLabels(Map.of("nes", "worker")).endMetadata()
                 .withNewSpec()
-                .withNewSelector().addToMatchLabels("app", name).endSelector()
+                .withNewSelector().addToMatchLabels(labels).endSelector()
                 .withNewTemplate()
-                .withNewMetadata().addToLabels("app", name).endMetadata()
+                .withNewMetadata().addToLabels(labels).endMetadata()
                 .withNewSpec()
                 .addToContainers(container)
                 .endSpec()
@@ -121,10 +120,11 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
                 .withLabel("topology", "nes")
                 .list()
                 .getItems();
-        Set<String> desiredNames = desired.getSpec().getNodes()
-                .stream()
-                .map(NesWorker::getName)
-                .collect(Collectors.toSet());
+
+        Set<String> desiredNames = new HashSet<>();
+        for (NesWorker worker : desired.getSpec().getNodes()) {
+            desiredNames.add(worker.getName());
+        }
 
         for (Deployment deployment : currentDeployments) {
             String deploymentName = deployment.getMetadata().getName();

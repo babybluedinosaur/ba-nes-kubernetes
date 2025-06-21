@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tcp-server
+  labels:
+    nes: server
 spec:
   selector:
     matchLabels:
@@ -23,6 +25,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tcp-server-2
+  labels:
+    nes: server
 spec:
   selector:
     matchLabels:
@@ -31,6 +35,100 @@ spec:
     metadata:
       labels:
         app: tcp-server-2
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-3
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-3
+  template:
+    metadata:
+      labels:
+        app: tcp-server-3
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-4
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-4
+  template:
+    metadata:
+      labels:
+        app: tcp-server-4
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-5
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-5
+  template:
+    metadata:
+      labels:
+        app: tcp-server-5
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-6
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-6
+  template:
+    metadata:
+      labels:
+        app: tcp-server-6
     spec:
       containers:
         - name: tcp-server

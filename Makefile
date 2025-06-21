@@ -52,23 +52,28 @@ delete-pvcs:
 delete-queries:
 	kubectl delete deployment -l query=nebuli
 
-delete-server:
-	kubectl delete -f src/main/resources/cr/server.yaml
-
 delete-services:
 	kubectl delete svc -l topology=nes
 
 delete-configmap:
 	kubectl delete configmap -l topology=nes
 
-delete-query-cr:
-	kubectl delete nes-queries.nebulastream.com $(query)
+delete-topology:
+	kubectl delete deployment -l nes=worker
 
 delete-topologies-cr:
 	kubectl delete nes-topologies.nebulastream.com --all
 
 delete-queries-cr:
 	kubectl delete nes-queries.nebulastream.com --all
+
+delete-setup:
+	make delete-topology
+	make delete-queries
+	make delete-server
+
+delete-server:
+	kubectl delete -f src/main/resources/physical-source/server.yaml
 
 delete-all:
 	make delete-deployments
@@ -153,7 +158,7 @@ random-pod:
 	kubectl run -it --rm --image=busybox debug -- sh
 
 docker-push:
-	docker build --no-cache -t sidondocker/sido-nebuli .
+	docker build --no-cache --pull -t sidondocker/sido-nebuli .
 	docker push sidondocker/sido-nebuli
 
 # nc tcp-server-service 6666

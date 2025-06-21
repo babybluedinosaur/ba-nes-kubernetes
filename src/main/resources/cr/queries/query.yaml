@@ -3,7 +3,7 @@ kind: NesQuery
 metadata:
   name: query
 spec:
-  query: "SELECT * FROM stream INTO sinkStreamStream2;"
+  query: "SELECT * FROM stream INTO fast_csv_sink;"
   nebuli:
     image: sidondocker/sido-nebuli
     args: "stop"
