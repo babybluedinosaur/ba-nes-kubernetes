@@ -30,10 +30,10 @@ public class NesQueryReconciler implements Reconciler<NesQuery> {
 
         NesQueryStatus status = desired.getStatus();
         String deploymentName = "query-" + desired.getMetadata().getName();
-        // if we do not use this, the first query will always be ignored
+        // If we do not use this, the first query will always be ignored
         boolean statusWasNull = false;
 
-        // create status for query, important to stop later the query (see stopNebuli())
+        // Create status for query, important to stop later the query (see stopNebuli())
         if (status == null) {
             status = new NesQueryStatus();
             status.setDeploymentName(deploymentName);

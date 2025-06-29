@@ -48,7 +48,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
             Container container = new Container();
             container.setName(name);
             container.setImage(worker.getImage());
-            container.setImagePullPolicy("Always");
+            container.setImagePullPolicy("IfNotPresent");
             container.setArgs(Arrays.asList(
                     worker.getBind(),
                     worker.getConnection() + name + "-service:9090"));
@@ -73,6 +73,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
                 .withNewTemplate()
                 .withNewMetadata().addToLabels(labels).endMetadata()
                 .withNewSpec()
+                .withTerminationGracePeriodSeconds(0L)
                 .addToContainers(container)
                 .endSpec()
                 .endTemplate()
@@ -126,23 +127,31 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
             desiredNames.add(worker.getName());
         }
 
+        // Delete only worker deployments, which are not in desired topology
         for (Deployment deployment : currentDeployments) {
             String deploymentName = deployment.getMetadata().getName();
-            if (!desiredNames.contains(deploymentName) && !deploymentName.startsWith("tcp-server")
-            && !deploymentName.startsWith("query")) {
-                System.out.println("deleting deployment...: " + deploymentName);
-                client.apps().deployments()
-                        .inNamespace(desired.getMetadata().getNamespace())
-                        .withName(deployment.getMetadata().getName())
-                        .delete();
-                System.out.println("deployment deleted successfully");
-                System.out.println("deleting service...: " + deployment.getMetadata().getName() + "-service");
-                client.services()
-                        .inNamespace(deployment.getMetadata().getNamespace())
-                        .withName(deploymentName + "-service")
-                        .delete();
-                System.out.println("service deleted successfully");
+            if (deploymentName.startsWith("worker") && !desiredNames.contains(deploymentName)) {
+                deleteDeployment(desired,deploymentName, deployment);
+                deleteService(desired, deploymentName, deployment);
             }
         }
+    }
+
+    private void deleteDeployment(NesTopology desired, String deploymentName, Deployment deployment) {
+        logger.info("deleting deployment...: " + deploymentName);
+        client.apps().deployments()
+                .inNamespace(desired.getMetadata().getNamespace())
+                .withName(deployment.getMetadata().getName())
+                .delete();
+        logger.info("deployment deleted successfully");
+    }
+
+    private void deleteService(NesTopology desired, String deploymentName, Deployment deployment) {
+        logger.info("deleting service...: " + deploymentName + "-service");
+        client.services()
+                .inNamespace(deployment.getMetadata().getNamespace())
+                .withName(deploymentName + "-service")
+                .delete();
+        logger.info("service deleted successfully");
     }
 }

@@ -1,0 +1,45 @@
+apiVersion: nebulastream.com/v1
+kind: NesTopology
+metadata:
+  name: 8-nodes
+  annotations:
+    topology-file-name: 8-nodes
+spec:
+  nodes:
+    - name: worker1
+      image: nebulastream/worker:distributed
+      capacity: 0
+      buffers: 10
+      sinks:
+        - name: fast_csv_sink
+          type: Print
+          config:
+            inputFormat: CSV
+    - name: worker2
+      image: nebulastream/worker:distributed
+      capacity: 0
+      buffers: 10
+    - name: worker3
+      image: nebulastream/worker:distributed
+      capacity: 0
+      buffers: 10
+    - name: worker4
+      image: nebulastream/worker:distributed
+      capacity: 0
+      buffers: 10
+    - name: worker5
+      image: nebulastream/worker:distributed
+      capacity: 0
+      buffers: 10
+    - name: worker6
+      image: nebulastream/worker:distributed
+      capacity: 0
+      buffers: 10
+    - name: worker7
+      image: nebulastream/worker:distributed
+      capacity: 0
+      buffers: 10
+    - name: worker8
+      image: nebulastream/worker:distributed
+      capacity: 0
+      buffers: 10

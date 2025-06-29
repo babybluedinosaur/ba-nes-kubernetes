@@ -31,6 +31,10 @@ spec:
                         type: string
                       capacity:
                         type: integer
+                      buffers:
+                        type: integer
+                      cpus:
+                        type: integer
                       # sink and physical config generic
                       sinks:
                         type: array

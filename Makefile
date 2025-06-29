@@ -1,6 +1,13 @@
 run:
 	mvn compile exec:java -Dexec.mainClass=org.acme.Runner
 
+run-benchmark:
+	mvn clean test
+
+run-plots:
+	source venv/bin/activate
+	python plots/plot_edgeless.py
+
 update-replicas:
 	./edit_replicas.sh $(r)
 	mvn compile exec:java -Dexec.mainClass=org.acme.Runner
@@ -160,6 +167,9 @@ random-pod:
 docker-push:
 	docker build --no-cache --pull -t sidondocker/sido-nebuli .
 	docker push sidondocker/sido-nebuli
+
+start-ui:
+	k9s
 
 # nc tcp-server-service 6666
 # apt-get update && apt-get install -y netcat-openbsd

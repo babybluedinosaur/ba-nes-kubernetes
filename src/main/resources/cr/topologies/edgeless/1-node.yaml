@@ -1,0 +1,17 @@
+apiVersion: nebulastream.com/v1
+kind: NesTopology
+metadata:
+  name: 1-node
+  annotations:
+    topology-file-name: 1-node
+spec:
+  nodes:
+    - name: worker1
+      image: nebulastream/worker:distributed
+      capacity: 0
+      buffers: 10
+      sinks:
+        - name: fast_csv_sink
+          type: Print
+          config:
+            inputFormat: CSV

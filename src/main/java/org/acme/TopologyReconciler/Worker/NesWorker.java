@@ -12,6 +12,8 @@ public class NesWorker {
     private final String bind = "--bind=0.0.0.0:9090";
     private String connection = "--connection=";
     private int capacity;
+    private int buffers;
+    private int cpus;
     private List<JsonNode> sinks;
     private Links links;
     private List<JsonNode> physical;
@@ -36,6 +38,10 @@ public class NesWorker {
     public int getCapacity() {
         return capacity;
     }
+
+    public int getBuffers() { return buffers; }
+
+    public int getCpus() { return cpus; }
 
     public List<JsonNode> getSinks() {
         return sinks;

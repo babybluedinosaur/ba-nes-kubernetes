@@ -12,8 +12,14 @@ public class ConfigBuilder {
     // Creates configmap, which contains converted yaml for nebuli input
     public void buildTargetMap(String fileName, io.fabric8.kubernetes.client.KubernetesClient client) throws IOException {
         TopologyConverter topologyConverter = new TopologyConverter(client);
-        String convertedContent =
-                topologyConverter.convertTopology("src/main/resources/cr/topologies/" + fileName + ".yaml");
+        String convertedContent = null;
+        if (fileName.startsWith("topology")) {
+            convertedContent =
+                    topologyConverter.convertTopology("src/main/resources/cr/topologies/" + fileName + ".yaml");
+        } else {
+            convertedContent =
+                    topologyConverter.convertTopology("src/main/resources/cr/topologies/edgeless/" + fileName + ".yaml");
+        }
         ConfigMap configMap = new ConfigMapBuilder()
                 .withNewMetadata()
                 .withLabels(Map.of("topology", "nes"))
