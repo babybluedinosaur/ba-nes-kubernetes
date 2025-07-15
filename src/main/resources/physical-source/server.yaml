@@ -20,7 +20,6 @@ spec:
           ports:
             - containerPort: 9999
 ---
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -43,7 +42,6 @@ spec:
           ports:
             - containerPort: 9999
 ---
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -66,7 +64,6 @@ spec:
           ports:
             - containerPort: 9999
 ---
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -88,9 +85,7 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 9999
-
 ---
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -112,9 +107,7 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 9999
-
 ---
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -129,6 +122,578 @@ spec:
     metadata:
       labels:
         app: tcp-server-6
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-7
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-7
+  template:
+    metadata:
+      labels:
+        app: tcp-server-7
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-8
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-8
+  template:
+    metadata:
+      labels:
+        app: tcp-server-8
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-9
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-9
+  template:
+    metadata:
+      labels:
+        app: tcp-server-9
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-10
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-10
+  template:
+    metadata:
+      labels:
+        app: tcp-server-10
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-11
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-11
+  template:
+    metadata:
+      labels:
+        app: tcp-server-11
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-12
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-12
+  template:
+    metadata:
+      labels:
+        app: tcp-server-12
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-13
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-13
+  template:
+    metadata:
+      labels:
+        app: tcp-server-13
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-14
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-14
+  template:
+    metadata:
+      labels:
+        app: tcp-server-14
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-15
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-15
+  template:
+    metadata:
+      labels:
+        app: tcp-server-15
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-16
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-16
+  template:
+    metadata:
+      labels:
+        app: tcp-server-16
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-17
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-17
+  template:
+    metadata:
+      labels:
+        app: tcp-server-17
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-18
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-18
+  template:
+    metadata:
+      labels:
+        app: tcp-server-18
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-19
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-19
+  template:
+    metadata:
+      labels:
+        app: tcp-server-19
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-20
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-20
+  template:
+    metadata:
+      labels:
+        app: tcp-server-20
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-21
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-21
+  template:
+    metadata:
+      labels:
+        app: tcp-server-21
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-22
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-22
+  template:
+    metadata:
+      labels:
+        app: tcp-server-22
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-23
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-23
+  template:
+    metadata:
+      labels:
+        app: tcp-server-23
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-24
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-24
+  template:
+    metadata:
+      labels:
+        app: tcp-server-24
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-25
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-25
+  template:
+    metadata:
+      labels:
+        app: tcp-server-25
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-26
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-26
+  template:
+    metadata:
+      labels:
+        app: tcp-server-26
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-27
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-27
+  template:
+    metadata:
+      labels:
+        app: tcp-server-27
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-28
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-28
+  template:
+    metadata:
+      labels:
+        app: tcp-server-28
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-29
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-29
+  template:
+    metadata:
+      labels:
+        app: tcp-server-29
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-30
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-30
+  template:
+    metadata:
+      labels:
+        app: tcp-server-30
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-31
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-31
+  template:
+    metadata:
+      labels:
+        app: tcp-server-31
+    spec:
+      containers:
+        - name: tcp-server
+          image: sidondocker/tcp-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9999
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tcp-server-32
+  labels:
+    nes: server
+spec:
+  selector:
+    matchLabels:
+      app: tcp-server-32
+  template:
+    metadata:
+      labels:
+        app: tcp-server-32
     spec:
       containers:
         - name: tcp-server

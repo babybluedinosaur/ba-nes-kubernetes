@@ -16,6 +16,9 @@ public class ConfigBuilder {
         if (fileName.startsWith("topology")) {
             convertedContent =
                     topologyConverter.convertTopology("src/main/resources/cr/topologies/" + fileName + ".yaml");
+        } else if (fileName.startsWith("star")) {
+            convertedContent =
+                    topologyConverter.convertTopology("src/main/resources/cr/topologies/edge/star/" + fileName + ".yaml");
         } else {
             convertedContent =
                     topologyConverter.convertTopology("src/main/resources/cr/topologies/edgeless/" + fileName + ".yaml");

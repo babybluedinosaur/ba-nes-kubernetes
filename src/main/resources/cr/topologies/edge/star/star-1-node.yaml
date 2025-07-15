@@ -1,0 +1,39 @@
+apiVersion: nebulastream.com/v1
+kind: NesTopology
+metadata:
+  name: star-1-node
+  annotations:
+    topology-file-name: star-1-node
+spec:
+  logical:
+    - name: stream
+      schema:
+        - type: UINT64
+          name: id
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+  nodes:
+    - name: worker1
+      image: nebulastream/worker:distributed
+      capacity: 100
+      sinks:
+        - name: fast_csv_sink
+          type: Print
+          config:
+            inputFormat: CSV
+        - name: slow_csv_sink
+          type: Print
+          config:
+            inputFormat: CSV
+      physical:
+        - logical: stream
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET

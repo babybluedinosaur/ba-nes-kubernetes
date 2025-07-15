@@ -49,9 +49,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
             container.setName(name);
             container.setImage(worker.getImage());
             container.setImagePullPolicy("IfNotPresent");
-            container.setArgs(Arrays.asList(
-                    worker.getBind(),
-                    worker.getConnection() + name + "-service:9090"));
+            container.setArgs(setArguments(worker));
             container.setPorts(Arrays.asList(
                     new ContainerPortBuilder().withContainerPort(8080).build(),
                     new ContainerPortBuilder().withContainerPort(9090).build()
@@ -59,6 +57,16 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
             containers.add(container);
         }
         return containers;
+    }
+
+    public List<String> setArguments(NesWorker worker) {
+        List<String> args = new ArrayList<>();
+        args.add(worker.getBind());
+        args.add(worker.getConnection() + worker.getName() + "-service:9090");
+        if (worker.getBuffers() != null) {
+            args.add("--worker.numberOfBuffersInGlobalBufferManager=" + worker.getBuffers());
+        }
+        return args;
     }
 
     public void createDeployment(NesTopology desired, Container container) {

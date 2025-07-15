@@ -1,0 +1,785 @@
+apiVersion: nebulastream.com/v1
+kind: NesTopology
+metadata:
+  name: star-32-nodes
+  annotations:
+    topology-file-name: star-32-nodes
+spec:
+  logical:
+    - name: stream
+      schema:
+        - type: UINT64
+          name: id
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream2
+      schema:
+        - type: UINT64
+          name: id2
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream3
+      schema:
+        - type: UINT64
+          name: id3
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream4
+      schema:
+        - type: UINT64
+          name: id4
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream5
+      schema:
+        - type: UINT64
+          name: id5
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream6
+      schema:
+        - type: UINT64
+          name: id6
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream7
+      schema:
+        - type: UINT64
+          name: id7
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream8
+      schema:
+        - type: UINT64
+          name: id8
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream9
+      schema:
+        - type: UINT64
+          name: id9
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream10
+      schema:
+        - type: UINT64
+          name: id10
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream11
+      schema:
+        - type: UINT64
+          name: id11
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream12
+      schema:
+        - type: UINT64
+          name: id12
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream13
+      schema:
+        - type: UINT64
+          name: id13
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream14
+      schema:
+        - type: UINT64
+          name: id14
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream15
+      schema:
+        - type: UINT64
+          name: id15
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream16
+      schema:
+        - type: UINT64
+          name: id16
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream17
+      schema:
+        - type: UINT64
+          name: id17
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream18
+      schema:
+        - type: UINT64
+          name: id18
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream19
+      schema:
+        - type: UINT64
+          name: id19
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream20
+      schema:
+        - type: UINT64
+          name: id20
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream21
+      schema:
+        - type: UINT64
+          name: id21
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream22
+      schema:
+        - type: UINT64
+          name: id22
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream23
+      schema:
+        - type: UINT64
+          name: id23
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream24
+      schema:
+        - type: UINT64
+          name: id24
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream25
+      schema:
+        - type: UINT64
+          name: id25
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream26
+      schema:
+        - type: UINT64
+          name: id26
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream27
+      schema:
+        - type: UINT64
+          name: id27
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream28
+      schema:
+        - type: UINT64
+          name: id28
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream29
+      schema:
+        - type: UINT64
+          name: id29
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream30
+      schema:
+        - type: UINT64
+          name: id30
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream31
+      schema:
+        - type: UINT64
+          name: id31
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream32
+      schema:
+        - type: UINT64
+          name: id32
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+
+  nodes:
+    - name: worker1
+      image: nebulastream/worker:distributed
+      capacity: 100
+      buffers: 150000
+      physical:
+        - logical: stream
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+      sinks:
+        - name: fast_csv_sink
+          type: Print
+          config:
+            inputFormat: CSV
+        - name: slow_csv_sink
+          type: Print
+          config:
+            inputFormat: CSV
+    - name: worker2
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream2
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-2
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker3
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream3
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-3
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker4
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream4
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-4
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker5
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream5
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-5
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker6
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream6
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-6
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker7
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream7
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-7
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker8
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream8
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-8
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker9
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream9
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-9
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker10
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream10
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-10
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker11
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream11
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-11
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker12
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream12
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-12
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker13
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream13
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-13
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker14
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream14
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-14
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker15
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream15
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-15
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker16
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream16
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-16
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker17
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream17
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-17
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker18
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream18
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-18
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker19
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream19
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-19
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker20
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream20
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-20
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker21
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream21
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-21
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker22
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream22
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-22
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker23
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream23
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-23
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker24
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream24
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-24
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker25
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream25
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-25
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker26
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream26
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-26
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker27
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream27
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-27
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker28
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream28
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-28
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker29
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream29
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-29
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker30
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream30
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-30
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker31
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream31
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-31
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker32
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream32
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-32
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET

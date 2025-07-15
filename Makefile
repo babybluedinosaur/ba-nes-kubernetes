@@ -1,7 +1,9 @@
 run:
+	make apply-server
 	mvn compile exec:java -Dexec.mainClass=org.acme.Runner
 
 run-benchmark:
+	make apply-server
 	mvn clean test
 
 run-plots:
@@ -82,7 +84,12 @@ delete-setup:
 delete-server:
 	kubectl delete -f src/main/resources/physical-source/server.yaml
 
+delete-crs:
+	make delete-topologies-cr
+	make delete-queries-cr
+
 delete-all:
+	make delete-crs
 	make delete-deployments
 	make delete-pods
 	make delete-services

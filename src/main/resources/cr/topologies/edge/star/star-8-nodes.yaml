@@ -1,9 +1,9 @@
 apiVersion: nebulastream.com/v1
 kind: NesTopology
 metadata:
-  name: topology-8-nodes
+  name: star-8-nodes
   annotations:
-    topology-file-name: topology-8-nodes
+    topology-file-name: star-8-nodes
 spec:
   logical:
     - name: stream
@@ -49,7 +49,23 @@ spec:
     - name: stream6
       schema:
         - type: UINT64
-          name: id5
+          name: id6
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream7
+      schema:
+        - type: UINT64
+          name: id7
+        - type: UINT64
+          name: value
+        - type: UINT64
+          name: timestamp
+    - name: stream8
+      schema:
+        - type: UINT64
+          name: id8
         - type: UINT64
           name: value
         - type: UINT64
@@ -67,41 +83,6 @@ spec:
           type: Print
           config:
             inputFormat: CSV
-    - name: worker2
-      image: nebulastream/worker:distributed
-      capacity: 100
-      links:
-        downstreams:
-          - worker1
-        upstreams:
-          - worker6
-    - name: worker3
-      image: nebulastream/worker:distributed
-      capacity: 100
-      links:
-        downstreams:
-          - worker1
-        upstreams:
-          - worker4
-    - name: worker4
-      image: nebulastream/worker:distributed
-      capacity: 100
-      links:
-        downstreams:
-          - worker3
-        upstreams:
-          - worker7
-    - name: worker5
-      image: nebulastream/worker:distributed
-      capacity: 100
-      links:
-        downstreams:
-          - worker1
-        upstreams:
-          - worker8
-    - name: worker6
-      image: nebulastream/worker:distributed
-      capacity: 0
       physical:
         - logical: stream
           parserConfig:
@@ -112,6 +93,13 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+    - name: worker2
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
         - logical: stream2
           parserConfig:
             type: CSV
@@ -121,9 +109,12 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
-    - name: worker7
+    - name: worker3
       image: nebulastream/worker:distributed
       capacity: 0
+      links:
+        downstreams:
+          - worker1
       physical:
         - logical: stream3
           parserConfig:
@@ -134,6 +125,13 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+    - name: worker4
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
         - logical: stream4
           parserConfig:
             type: CSV
@@ -143,6 +141,13 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+    - name: worker5
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
         - logical: stream5
           parserConfig:
             type: CSV
@@ -152,15 +157,50 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
-    - name: worker8
+    - name: worker6
       image: nebulastream/worker:distributed
       capacity: 0
+      links:
+        downstreams:
+          - worker1
       physical:
         - logical: stream6
           parserConfig:
             type: CSV
           sourceConfig:
             socketHost: tcp-server-6
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker7
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream7
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-7
+            socketPort: 6666
+            type: TCP
+            socketType: SOCK_STREAM
+            socketDomain: AF_INET
+    - name: worker8
+      image: nebulastream/worker:distributed
+      capacity: 0
+      links:
+        downstreams:
+          - worker1
+      physical:
+        - logical: stream8
+          parserConfig:
+            type: CSV
+          sourceConfig:
+            socketHost: tcp-server-8
             socketPort: 6666
             type: TCP
             socketType: SOCK_STREAM
