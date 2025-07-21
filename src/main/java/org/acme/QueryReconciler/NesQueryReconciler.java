@@ -47,11 +47,9 @@ public class NesQueryReconciler implements Reconciler<NesQuery> {
         Nebuli nebuli = spec.getNebuli();
         String arg = nebuli.getArgs();
 
-        //TODO: maybe replace sleep with actual status check (is topology ready?)
         logger.info("argument received in reconcile: '{}'", arg);
         if (arg.equals("start")) {
             Deployment deployment = buildNebuli(desired, nebuli, query);
-            Thread.sleep(1000);
             try {
                 client.apps().deployments().inNamespace(desired.getMetadata().getNamespace()).createOrReplace(deployment);
             } catch (Exception e) {
@@ -79,7 +77,7 @@ public class NesQueryReconciler implements Reconciler<NesQuery> {
         Container nebuliContainer = new ContainerBuilder()
                 .withName("nebuli")
                 .withImage(nebuli.getImage())
-                .withImagePullPolicy("Always")
+                .withImagePullPolicy("IfNotPresent")
                 .withArgs("/topology/convert-target.yaml", query)
                 .withVolumeMounts(
                         TopologyMounter.buildTopologyMap(client)

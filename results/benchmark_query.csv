@@ -1,0 +1,7 @@
+Query,First timestamp duration(ms),Query stop duration(ms),First timestamp duration stdEv(ms),Query stop stdEv(ms), nodeCount, timeoutsFirstTimestamp, timeoutsQueryStop
+query-join-1,2346.71,411.90,285.98,130.28,1,0,0
+query-join-2,3402.47,884.24,222.97,553.67,2,0,0
+query-join-4,5580.17,2416.38,298.79,1542.71,4,0,0
+query-join-8,7072.36,1043.73,598.88,1311.67,8,4,0
+query-join-16,13197.58,3121.37,2578.10,2362.22,16,8,0
+query-join-32,46570.84,4940.30,8858.49,3268.55,32,17,0

@@ -29,7 +29,7 @@ public class BenchmarkTest {
     DescriptiveStatistics readyStats = new DescriptiveStatistics();
     DescriptiveStatistics deleteStats = new DescriptiveStatistics();
     List<HasMetadata> resources;
-    Set<String> readyPodNames;
+    Set<String> readyNodeNames;
     String topologyName = "";
     volatile Instant readyStartTime;
     volatile Instant readyDeleteTime;
@@ -40,7 +40,7 @@ public class BenchmarkTest {
 
     public void init(String topologyName) {
         this.client = new DefaultKubernetesClient();
-        this.readyPodNames = Collections.synchronizedSet(new HashSet<>());
+        this.readyNodeNames = Collections.synchronizedSet(new HashSet<>());
         this.topologyName = topologyName;
         this.expectedPods = Integer.parseInt(topologyName.split("-")[0]);
     }
@@ -55,8 +55,7 @@ public class BenchmarkTest {
     }
 
     @ParameterizedTest
-//    @ValueSource(strings = {"1-node","2-nodes", "4-nodes", "8-nodes", "16-nodes", "32-nodes"})
-    @ValueSource(strings = {"1-node"})
+    @ValueSource(strings = {"edgeless-1","edgeless-2", "edgeless-4", "edgeless-8", "edgeless-16", "edgeless-32"})
     public void measureTopologyTime(String topologyName) throws IOException, InterruptedException {
         logger.info("starting topology benchmark test for " +  topologyName);
         init(topologyName);
@@ -114,7 +113,7 @@ public class BenchmarkTest {
     }
 
     public Watch readyStartTimeWatcher(CountDownLatch latch) {
-        AtomicBoolean allPodsReady = new AtomicBoolean(false);
+        AtomicBoolean allNodesReady = new AtomicBoolean(false);
         Watch watcher = client.pods().inNamespace(client.getNamespace())
                 .withLabel("nes", "worker")
                 .watch(new Watcher<Pod>() {
@@ -123,18 +122,18 @@ public class BenchmarkTest {
                         String name = pod.getMetadata().getLabels().get("app");
                         if (action == Action.ADDED || action == Action.MODIFIED) {
                             if (isReady(pod)) {
-                                readyPodNames.add(name);
+                                readyNodeNames.add(name);
                             } else {
-                                readyPodNames.remove(name);
+                                readyNodeNames.remove(name);
                             }
                         } else if (action == Action.DELETED) {
-                            readyPodNames.remove(name);
+                            readyNodeNames.remove(name);
                         }
 
                         // All pods are ready, stop and print time
-                        if (expectedPods == readyPodNames.size()) {
+                        if (expectedPods == readyNodeNames.size()) {
                             Instant end = Instant.now();
-                            allPodsReady.set(true);
+                            allNodesReady.set(true);
                             readyStats.addValue(java.time.Duration.between(readyStartTime, end).toMillis());
                             latch.countDown();
                         }
@@ -162,9 +161,9 @@ public class BenchmarkTest {
                     public void eventReceived(Action action, Pod pod) {
                         String name = pod.getMetadata().getLabels().get("app");
                         if (action == Action.DELETED) {
-                            readyPodNames.remove(name);
+                            readyNodeNames.remove(name);
 
-                            if (readyPodNames.isEmpty()) {
+                            if (readyNodeNames.isEmpty()) {
                                 Instant end = Instant.now();
                                 deleteStats.addValue(java.time.Duration.between(readyDeleteTime, end).toMillis());
                                 latch.countDown();

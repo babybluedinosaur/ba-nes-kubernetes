@@ -1,0 +1,255 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tcp-server
+  labels:
+    nes: server
+    app: tcp-server
+spec:
+  terminationGracePeriodSeconds: 1
+  containers:
+    - name: tcp-server
+      image: sidondocker/tcp-server:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 9999
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tcp-server-2
+  labels:
+    nes: server
+    app: tcp-server-2
+spec:
+  terminationGracePeriodSeconds: 1
+  containers:
+    - name: tcp-server
+      image: sidondocker/tcp-server:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 9999
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tcp-server-3
+  labels:
+    nes: server
+    app: tcp-server-3
+spec:
+  terminationGracePeriodSeconds: 1
+  containers:
+    - name: tcp-server
+      image: sidondocker/tcp-server:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 9999
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tcp-server-4
+  labels:
+    nes: server
+    app: tcp-server-4
+spec:
+  terminationGracePeriodSeconds: 1
+  containers:
+    - name: tcp-server
+      image: sidondocker/tcp-server:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 9999
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tcp-server-5
+  labels:
+    nes: server
+    app: tcp-server-5
+spec:
+  terminationGracePeriodSeconds: 1
+  containers:
+    - name: tcp-server
+      image: sidondocker/tcp-server:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 9999
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tcp-server-6
+  labels:
+    nes: server
+    app: tcp-server-6
+spec:
+  terminationGracePeriodSeconds: 1
+  containers:
+    - name: tcp-server
+      image: sidondocker/tcp-server:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 9999
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tcp-server-7
+  labels:
+    nes: server
+    app: tcp-server-7
+spec:
+  terminationGracePeriodSeconds: 1
+  containers:
+    - name: tcp-server
+      image: sidondocker/tcp-server:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 9999
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tcp-server-8
+  labels:
+    nes: server
+    app: tcp-server-8
+spec:
+  terminationGracePeriodSeconds: 1
+  containers:
+    - name: tcp-server
+      image: sidondocker/tcp-server:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 9999
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tcp-server-9
+  labels:
+    nes: server
+    app: tcp-server-9
+spec:
+  terminationGracePeriodSeconds: 1
+  containers:
+    - name: tcp-server
+      image: sidondocker/tcp-server:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 9999
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tcp-server-10
+  labels:
+    nes: server
+    app: tcp-server-10
+spec:
+  terminationGracePeriodSeconds: 1
+  containers:
+    - name: tcp-server
+      image: sidondocker/tcp-server:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 9999
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tcp-server-11
+  labels:
+    nes: server
+    app: tcp-server-11
+spec:
+  terminationGracePeriodSeconds: 1
+  containers:
+    - name: tcp-server
+      image: sidondocker/tcp-server:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 9999
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tcp-server-12
+  labels:
+    nes: server
+    app: tcp-server-12
+spec:
+  terminationGracePeriodSeconds: 1
+  containers:
+    - name: tcp-server
+      image: sidondocker/tcp-server:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 9999
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tcp-server-13
+  labels:
+    nes: server
+    app: tcp-server-13
+spec:
+  terminationGracePeriodSeconds: 1
+  containers:
+    - name: tcp-server
+      image: sidondocker/tcp-server:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 9999
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tcp-server-14
+  labels:
+    nes: server
+    app: tcp-server-14
+spec:
+  terminationGracePeriodSeconds: 1
+  containers:
+    - name: tcp-server
+      image: sidondocker/tcp-server:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 9999
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tcp-server-15
+  labels:
+    nes: server
+    app: tcp-server-15
+spec:
+  terminationGracePeriodSeconds: 1
+  containers:
+    - name: tcp-server
+      image: sidondocker/tcp-server:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 9999
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tcp-server-16
+  labels:
+    nes: server
+    app: tcp-server-16
+spec:
+  terminationGracePeriodSeconds: 1
+  containers:
+    - name: tcp-server
+      image: sidondocker/tcp-server:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 9999

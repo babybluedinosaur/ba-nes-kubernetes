@@ -12,8 +12,11 @@ public class NesWorker {
     private final String bind = "--bind=0.0.0.0:9090";
     private String connection = "--connection=";
     private int capacity;
-    private Integer buffers;
-    private int cpus;
+    private Integer buffersGlobalManager;
+    private Integer buffersPerWorker;
+    private Integer buffersLocalPools;
+    private Integer bufferSizeInBytes;
+    private String compilerExecutionMode;
     private List<JsonNode> sinks;
     private Links links;
     private List<JsonNode> physical;
@@ -27,9 +30,7 @@ public class NesWorker {
         return image;
     }
 
-    public String getBind() {
-        return bind;
-    }
+    public String getBind() { return bind;}
 
     public String getConnection() {
         return connection;
@@ -39,9 +40,15 @@ public class NesWorker {
         return capacity;
     }
 
-    public Integer getBuffers() { return buffers; }
+    public Integer getBuffersGlobalManager() { return buffersGlobalManager; }
 
-    public int getCpus() { return cpus; }
+    public Integer getBuffersPerWorker() { return buffersPerWorker; }
+
+    public Integer getBuffersLocalPools() { return buffersLocalPools; }
+
+    public Integer getBufferSizeInBytes() { return bufferSizeInBytes; }
+
+    public String getCompilerExecutionMode() { return compilerExecutionMode; }
 
     public List<JsonNode> getSinks() {
         return sinks;

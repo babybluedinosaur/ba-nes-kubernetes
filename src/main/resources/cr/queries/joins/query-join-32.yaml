@@ -104,4 +104,4 @@ INTO fast_csv_sink;
 "
   nebuli:
       image: sidondocker/sido-nebuli
-      args: "stop"
+      args: "start"

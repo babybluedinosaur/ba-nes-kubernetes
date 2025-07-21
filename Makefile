@@ -1,18 +1,18 @@
 run:
-	make apply-server
 	mvn compile exec:java -Dexec.mainClass=org.acme.Runner
 
-run-benchmark:
-	make apply-server
-	mvn clean test
+benchmark:
+	mvn clean test -Dtest=org.acme.BenchmarkQueryTest
 
 run-plots:
 	source venv/bin/activate
 	python plots/plot_edgeless.py
 
-update-replicas:
-	./edit_replicas.sh $(r)
-	mvn compile exec:java -Dexec.mainClass=org.acme.Runner
+minikube:
+	minikube start --docker-opt="default-ulimit=nofile=1048576:1048576"
+
+metrics-server:
+	kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 
 apply-cr-topology:
 	kubectl apply -f src/main/resources/cr/convert-source.yaml
@@ -21,7 +21,7 @@ apply-crd-topology:
 	kubectl apply -f src/main/resources/crds/crd-topology.yaml
 
 apply-server:
-	kubectl apply -f src/main/resources/physical-source/server.yaml
+	kubectl apply -f src/main/resources/physical-source/server-pod-1.yaml
 
 apply-server-service:
 	kubectl apply -f src/main/resources/svc/svc-server.yaml

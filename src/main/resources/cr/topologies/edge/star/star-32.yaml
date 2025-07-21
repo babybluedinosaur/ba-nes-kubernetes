@@ -1,9 +1,9 @@
 apiVersion: nebulastream.com/v1
 kind: NesTopology
 metadata:
-  name: star-32-nodes
+  name: star-32
   annotations:
-    topology-file-name: star-32-nodes
+    topology-file-name: star-32
 spec:
   logical:
     - name: stream
@@ -267,7 +267,8 @@ spec:
     - name: worker1
       image: nebulastream/worker:distributed
       capacity: 100
-      buffers: 150000
+      buffersGlobalManager: 20000
+      compilerExecutionMode: INTERPRETER
       physical:
         - logical: stream
           parserConfig:
@@ -278,6 +279,7 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
       sinks:
         - name: fast_csv_sink
           type: Print
@@ -290,6 +292,7 @@ spec:
     - name: worker2
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -303,9 +306,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker3
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -319,9 +324,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker4
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -335,9 +342,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker5
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -351,9 +360,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker6
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -367,9 +378,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker7
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -383,9 +396,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker8
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -399,9 +414,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker9
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -415,9 +432,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker10
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -431,9 +450,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker11
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -447,9 +468,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker12
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -463,9 +486,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker13
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -479,9 +504,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker14
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -495,9 +522,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker15
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -511,9 +540,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker16
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -527,9 +558,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker17
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -543,9 +576,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker18
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -559,9 +594,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker19
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -575,9 +612,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker20
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -591,9 +630,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker21
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -607,9 +648,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker22
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -623,9 +666,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker23
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -639,9 +684,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker24
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -655,9 +702,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker25
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -671,9 +720,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker26
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -687,9 +738,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker27
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -703,9 +756,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker28
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -719,9 +774,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker29
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -735,9 +792,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker30
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -751,9 +810,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker31
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -767,9 +828,11 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1
     - name: worker32
       image: nebulastream/worker:distributed
       capacity: 0
+      compilerExecutionMode: INTERPRETER
       links:
         downstreams:
           - worker1
@@ -783,3 +846,4 @@ spec:
             type: TCP
             socketType: SOCK_STREAM
             socketDomain: AF_INET
+            flushIntervalMS: 1

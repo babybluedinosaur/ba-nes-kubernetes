@@ -63,8 +63,17 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
         List<String> args = new ArrayList<>();
         args.add(worker.getBind());
         args.add(worker.getConnection() + worker.getName() + "-service:9090");
-        if (worker.getBuffers() != null) {
-            args.add("--worker.numberOfBuffersInGlobalBufferManager=" + worker.getBuffers());
+        if (worker.getBuffersGlobalManager() != null) {
+            args.add("--worker.numberOfBuffersInGlobalBufferManager=" + worker.getBuffersGlobalManager());
+        }
+        if (worker.getBuffersPerWorker() != null) {
+            args.add("--worker.numberOfBuffersPerWorker=" + worker.getBuffersPerWorker());
+        }
+        if (worker.getBufferSizeInBytes() != null) {
+            args.add("--worker.bufferSizeInBytes=" + worker.getBufferSizeInBytes());
+        }
+        if (worker.getCompilerExecutionMode() != null) {
+            args.add("--worker.queryCompiler.nautilusBackend=" + worker.getCompilerExecutionMode());
         }
         return args;
     }

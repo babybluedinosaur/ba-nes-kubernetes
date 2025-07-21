@@ -1,0 +1,9 @@
+apiVersion: nebulastream.com/v1
+kind: NesQuery
+metadata:
+  name: query-join-8
+spec:
+  query: ""
+  nebuli:
+    image: sidondocker/sido-nebuli
+    args: "stop"

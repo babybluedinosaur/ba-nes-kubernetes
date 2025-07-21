@@ -31,10 +31,16 @@ spec:
                         type: string
                       capacity:
                         type: integer
-                      buffers:
+                      buffersGlobalManager:
                         type: integer
-                      cpus:
+                      buffersPerWorker:
                         type: integer
+                      buffersLocalPools:
+                        type: integer
+                      bufferSizeInBytes:
+                        type: integer
+                      compilerExecutionMode:
+                        type: string
                       # sink and physical config generic
                       sinks:
                         type: array

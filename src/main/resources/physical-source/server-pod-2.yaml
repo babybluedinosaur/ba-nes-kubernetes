@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tcp-server
+  labels:
+    nes: server
+    app: tcp-server
+spec:
+  terminationGracePeriodSeconds: 1
+  containers:
+    - name: tcp-server
+      image: sidondocker/tcp-server:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 9999
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: tcp-server-2
+  labels:
+    nes: server
+    app: tcp-server-2
+spec:
+  terminationGracePeriodSeconds: 1
+  containers:
+    - name: tcp-server
+      image: sidondocker/tcp-server:latest
+      imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 9999
