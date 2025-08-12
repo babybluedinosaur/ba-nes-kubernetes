@@ -5,115 +5,117 @@ metadata:
   annotations:
     topology-file-name: star-4
 spec:
-  logical:
+  sinks:
+    - name: fast_csv_sink
+      type: Print
+      config:
+        inputFormat: CSV
+      schema:
+        - name: streamstream2stream3stream4$start
+          dataType: UINT64
+        - name: streamstream2stream3stream4$end
+          dataType: UINT64
+        - name: stream$id
+          dataType: UINT64
+      host: worker-1
+  logicalSources:
     - name: stream
       schema:
-        - type: UINT64
+        - dataType: UINT64
           name: id
-        - type: UINT64
+        - dataType: UINT64
           name: value
-        - type: UINT64
+        - dataType: UINT64
           name: timestamp
     - name: stream2
       schema:
-        - type: UINT64
+        - dataType: UINT64
           name: id2
-        - type: UINT64
+        - dataType: UINT64
           name: value
-        - type: UINT64
+        - dataType: UINT64
           name: timestamp
     - name: stream3
       schema:
-        - type: UINT64
+        - dataType: UINT64
           name: id3
-        - type: UINT64
+        - dataType: UINT64
           name: value
-        - type: UINT64
+        - dataType: UINT64
           name: timestamp
     - name: stream4
       schema:
-        - type: UINT64
+        - dataType: UINT64
           name: id4
-        - type: UINT64
+        - dataType: UINT64
           name: value
-        - type: UINT64
+        - dataType: UINT64
           name: timestamp
-  nodes:
-    - name: worker1
-      image: nebulastream/worker:distributed
+  physicalSources:
+    - logicalSource: stream
+      host: worker-1
+      parserConfig:
+        type: CSV
+      type: TCP
+      sourceConfig:
+        socketHost: tcp-server
+        socketPort: 6666
+        flushIntervalMS: 1
+        socketType: SOCK_STREAM
+        socketDomain: AF_INET
+    - logicalSource: stream2
+      host: worker-2
+      parserConfig:
+        type: CSV
+      type: TCP
+      sourceConfig:
+        socketHost: tcp-server-2
+        socketPort: 6666
+        flushIntervalMS: 1
+        socketType: SOCK_STREAM
+        socketDomain: AF_INET
+    - logicalSource: stream3
+      host: worker-3
+      parserConfig:
+        type: CSV
+      type: TCP
+      sourceConfig:
+        socketHost: tcp-server-3
+        socketPort: 6666
+        socketType: SOCK_STREAM
+        flushIntervalMS: 1
+        socketDomain: AF_INET
+    - logicalSource: stream4
+      host: worker-4
+      parserConfig:
+        type: CSV
+      type: TCP
+      sourceConfig:
+        socketHost: tcp-server-4
+        socketPort: 6666
+        flushIntervalMS: 1
+        socketType: SOCK_STREAM
+        socketDomain: AF_INET
+  workerNodes:
+    - host: worker-1
+      image: nebulastream/worker:v2distributed
       capacity: 100
-      compilerExecutionMode: INTERPRETER
-      sinks:
-        - name: fast_csv_sink
-          type: Print
-          config:
-            inputFormat: CSV
-        - name: slow_csv_sink
-          type: Print
-          config:
-            inputFormat: CSV
-      physical:
-        - logical: stream
-          parserConfig:
-            type: CSV
-          sourceConfig:
-            socketHost: tcp-server
-            socketPort: 6666
-            type: TCP
-            socketType: SOCK_STREAM
-            socketDomain: AF_INET
-            flushIntervalMS: 1
-    - name: worker2
-      image: nebulastream/worker:distributed
+      executionMode: INTERPRETER
+    - host: worker-2
+      image: nebulastream/worker:v2distributed
       capacity: 0
-      compilerExecutionMode: INTERPRETER
-      links:
-        downstreams:
-          - worker1
-      physical:
-        - logical: stream2
-          parserConfig:
-            type: CSV
-          sourceConfig:
-            socketHost: tcp-server-2
-            socketPort: 6666
-            type: TCP
-            socketType: SOCK_STREAM
-            socketDomain: AF_INET
-            flushIntervalMS: 1
-    - name: worker3
-      image: nebulastream/worker:distributed
+      executionMode: INTERPRETER
+      downstreamNodes:
+        - worker-1
+    - host: worker-3
+      image: nebulastream/worker:v2distributed
       capacity: 0
-      compilerExecutionMode: INTERPRETER
-      links:
-        downstreams:
-          - worker1
-      physical:
-        - logical: stream3
-          parserConfig:
-            type: CSV
-          sourceConfig:
-            socketHost: tcp-server-3
-            socketPort: 6666
-            type: TCP
-            socketType: SOCK_STREAM
-            socketDomain: AF_INET
-            flushIntervalMS: 1
-    - name: worker4
-      image: nebulastream/worker:distributed
+      executionMode: INTERPRETER
+      downstreamNodes:
+        - worker-1
+    - host: worker-4
+      image: nebulastream/worker:v2distributed
       capacity: 0
-      compilerExecutionMode: INTERPRETER
-      links:
-        downstreams:
-          - worker1
-      physical:
-        - logical: stream4
-          parserConfig:
-            type: CSV
-          sourceConfig:
-            socketHost: tcp-server-4
-            socketPort: 6666
-            type: TCP
-            socketType: SOCK_STREAM
-            socketDomain: AF_INET
-            flushIntervalMS: 1
+      executionMode: INTERPRETER
+      downstreamNodes:
+        - worker-1

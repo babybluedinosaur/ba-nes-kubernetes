@@ -3,17 +3,20 @@ kind: NesQuery
 metadata:
   name: query-join-4
 spec:
-  query: "SELECT * FROM (SELECT * FROM stream) 
-  INNER JOIN (SELECT * FROM stream2) 
-  ON id = id2
-  WINDOW TUMBLING (timestamp, size 1 sec) 
-  INNER JOIN (SELECT * FROM stream3) 
-  ON id2 = id3
-  WINDOW TUMBLING (timestamp, size 1 sec) 
-  INNER JOIN (SELECT * FROM stream4) 
-  ON id3 = id4 
-  WINDOW TUMBLING (timestamp, size 1 sec) 
-  INTO fast_csv_sink;"
+  query: |
+    SELECT start, end, id FROM (
+      SELECT * FROM (SELECT * FROM stream)
+      INNER JOIN (SELECT * FROM stream2)
+      ON id = id2
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream3)
+      ON id2 = id3
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream4)
+      ON id3 = id4
+      WINDOW TUMBLING (timestamp, size 1 sec)
+    )
+    INTO fast_csv_sink;
   nebuli:
     image: sidondocker/sido-nebuli
     args: "start"

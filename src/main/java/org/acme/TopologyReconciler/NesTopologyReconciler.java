@@ -42,8 +42,8 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
     public List<Container> createContainers(NesTopology desired) {
         List<Container> containers = new ArrayList<>();
-        for (NesWorker worker : desired.getSpec().getNodes()) {
-            String name = worker.getName();
+        for (NesWorker worker : desired.getSpec().getWorkerNodes()) {
+            String name = worker.getHost();
             workerMap.put(name, worker); // Duplicates get overwritten
             Container container = new Container();
             container.setName(name);
@@ -61,20 +61,23 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
     public List<String> setArguments(NesWorker worker) {
         List<String> args = new ArrayList<>();
+
+        String executionMode = worker.getExecutionMode();
+        if (executionMode != null) {
+            args.add("--worker.defaultQueryExecution.executionMode=" + executionMode);
+        }
+
+        Integer pageSize = worker.getPageSize();
+        if (pageSize != null) {
+            args.add("--worker.defaultQueryExecution.pageSize=" + pageSize);
+        }
+
+        Integer buffersGlobalManager = worker.getNumberOfBuffersInGlobalBufferManager();
+        if (buffersGlobalManager != null) {
+            args.add("--worker.numberOfBuffersInGlobalBufferManager=" + buffersGlobalManager);
+        }
         args.add(worker.getBind());
-        args.add(worker.getConnection() + worker.getName() + "-service:9090");
-        if (worker.getBuffersGlobalManager() != null) {
-            args.add("--worker.numberOfBuffersInGlobalBufferManager=" + worker.getBuffersGlobalManager());
-        }
-        if (worker.getBuffersPerWorker() != null) {
-            args.add("--worker.numberOfBuffersPerWorker=" + worker.getBuffersPerWorker());
-        }
-        if (worker.getBufferSizeInBytes() != null) {
-            args.add("--worker.bufferSizeInBytes=" + worker.getBufferSizeInBytes());
-        }
-        if (worker.getCompilerExecutionMode() != null) {
-            args.add("--worker.queryCompiler.nautilusBackend=" + worker.getCompilerExecutionMode());
-        }
+        args.add(worker.getConnection() + worker.getHost() + "-service:9090");
         return args;
     }
 
@@ -90,7 +93,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
                 .withNewTemplate()
                 .withNewMetadata().addToLabels(labels).endMetadata()
                 .withNewSpec()
-                .withTerminationGracePeriodSeconds(0L)
+                .withTerminationGracePeriodSeconds(3L)
                 .addToContainers(container)
                 .endSpec()
                 .endTemplate()
@@ -140,8 +143,8 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
                 .getItems();
 
         Set<String> desiredNames = new HashSet<>();
-        for (NesWorker worker : desired.getSpec().getNodes()) {
-            desiredNames.add(worker.getName());
+        for (NesWorker worker : desired.getSpec().getWorkerNodes()) {
+            desiredNames.add(worker.getHost());
         }
 
         // Delete only worker deployments, which are not in desired topology

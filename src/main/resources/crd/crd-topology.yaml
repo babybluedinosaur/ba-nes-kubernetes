@@ -10,59 +10,45 @@ spec:
       storage: true
       schema:
         openAPIV3Schema:
-          type: object # the example yaml itself
+          type: object
           properties:
             spec:
               type: object
               properties:
-                logical: # logical generic
+                sinks:
                   type: array
                   items:
                     type: object
                     x-kubernetes-preserve-unknown-fields: true
-                nodes: # NES Worker nodes
-                  type: array # we want several workers
+                logicalSources:
+                  type: array
                   items:
                     type: object
-                    properties: # properties of the object
-                      name:
+                    x-kubernetes-preserve-unknown-fields: true
+                physicalSources:
+                  type: array
+                  items:
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                workerNodes:
+                  type: array
+                  items:
+                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
+                    properties:
+                      host:
                         type: string
                       image:
                         type: string
-                      capacity:
-                        type: integer
-                      buffersGlobalManager:
-                        type: integer
-                      buffersPerWorker:
-                        type: integer
-                      buffersLocalPools:
-                        type: integer
-                      bufferSizeInBytes:
-                        type: integer
-                      compilerExecutionMode:
+                      executionMode:
                         type: string
-                      # sink and physical config generic
-                      sinks:
-                        type: array
-                        items:
-                          type: object
-                          x-kubernetes-preserve-unknown-fields: true
-                      links:
-                        type: object
-                        properties:
-                          downstreams:
-                            type: array
-                            items:
-                              type: string
-                          upstreams:
-                            type: array
-                            items:
-                              type: string
-                      physical:
-                        type: array
-                        items:
-                          type: object
-                          x-kubernetes-preserve-unknown-fields: true
+                      pageSize:
+                        type: integer
+                      numberOfBuffersInGlobalBufferManager:
+                        type: integer
+                    required:
+                      - host
+                      - image
   scope: Namespaced
   names:
     plural: nes-topologies

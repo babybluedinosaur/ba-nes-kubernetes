@@ -23,6 +23,7 @@ public class ConfigBuilder {
             convertedContent =
                     topologyConverter.convertTopology("src/main/resources/cr/topologies/edgeless/" + fileName + ".yaml");
         }
+
         ConfigMap configMap = new ConfigMapBuilder()
                 .withNewMetadata()
                 .withLabels(Map.of("topology", "nes"))

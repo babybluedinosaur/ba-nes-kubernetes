@@ -75,6 +75,7 @@ delete-topologies-cr:
 
 delete-queries-cr:
 	kubectl delete nes-queries.nebulastream.com --all
+	kubectl delete job -l query=nebuli
 
 delete-setup:
 	make delete-topology
@@ -91,6 +92,7 @@ delete-crs:
 delete-all:
 	make delete-crs
 	make delete-deployments
+	make delete-queries-cr
 	make delete-pods
 	make delete-services
 	make delete-configmap

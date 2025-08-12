@@ -5,6 +5,8 @@ pom.xml.versionsBackup
 release.properties
 .flattened-pom.xml
 logs.sh
+new_worker_log.txt
+old_worker_log.txt
 
 .idea
 plots/venv

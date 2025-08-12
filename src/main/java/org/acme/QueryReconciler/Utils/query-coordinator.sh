@@ -1,21 +1,14 @@
-#!/bin/bash
-
-# Source:
-# https://github.com/nebulastream/nebulastream/blob/ls-distributed-poc/demo/query-coordinator.sh
-
-TOPOLOGY=$1
-shift
-QUERY=$@
-QUERY_ID=$(/usr/bin/nes-nebuli -t ${TOPOLOGY} register -x "${QUERY}")
+#!/usr/bin/env bash
 
 # Fix for TODO: Trap exit signals to cleanup the query registration
 cleanup() {
-    /usr/bin/nes-nebuli -t ${TOPOLOGY} unregister "${QUERY_ID}"
+    /usr/bin/nes-nebuli unregister "${QUERY_ID}"
     exit
 }
 
 # Set trap for common exit signals
 trap cleanup EXIT INT TERM
+QUERY_ID=$(/usr/bin/nes-nebuli register -x -i "$1")
 
 if [ $? -eq 1 ]; then
     echo "Failed to start query"
@@ -24,7 +17,7 @@ fi
 
 sleep 1
 while true; do
-  STATUS=$(/usr/bin/nes-nebuli -t ${TOPOLOGY} status "${QUERY_ID}")
+  STATUS=$(/usr/bin/nes-nebuli query "${QUERY_ID}")
 
   # Check if query is complete or failed
   if echo "${STATUS}" | grep -q "COMPLETE\|FAILED"; then
