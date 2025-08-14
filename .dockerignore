@@ -1,0 +1,15 @@
+.idea
+kubetail
+plots
+results
+/src/main/resources/cr
+/src/main/resources/physical-source
+/src/main/resources/operator
+/src/test
+target
+.gitignore
+Dockerfile.nebuli
+Makefile
+new_worker_log.txt
+old_worker_log.txt
+README.md

@@ -40,12 +40,6 @@ spec:
                         type: string
                       image:
                         type: string
-                      executionMode:
-                        type: string
-                      pageSize:
-                        type: integer
-                      numberOfBuffersInGlobalBufferManager:
-                        type: integer
                     required:
                       - host
                       - image

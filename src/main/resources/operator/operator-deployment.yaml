@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nes-k8s-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nes-k8s-operator
+  template:
+    metadata:
+      labels:
+        app: nes-k8s-operator
+    spec:
+      serviceAccountName: nes-operator
+      containers:
+        - name: operator
+          image: europe-west3-docker.pkg.dev/iconic-mariner-468912-g1/nes-k8s-operator/nes-k8s-operator:0.1.0
+          imagePullPolicy: Always

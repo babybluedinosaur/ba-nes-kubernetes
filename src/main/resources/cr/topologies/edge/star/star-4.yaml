@@ -97,25 +97,25 @@ spec:
         socketType: SOCK_STREAM
         socketDomain: AF_INET
   workerNodes:
-    - host: worker-1
-      image: nebulastream/worker:v2distributed
-      capacity: 100
-      executionMode: INTERPRETER
-    - host: worker-2
-      image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
-      downstreamNodes:
-        - worker-1
-    - host: worker-3
-      image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
-      downstreamNodes:
-        - worker-1
-    - host: worker-4
-      image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
-      downstreamNodes:
-        - worker-1
+  - host: worker-1
+    image: nebulastream/worker:v2distributed
+    capacity: 100
+    worker.defaultQueryExecution.executionMode: INTERPRETER
+  - host: worker-2
+    image: nebulastream/worker:v2distributed
+    downstreamNodes:
+      - worker-1
+    capacity: 0
+    worker.defaultQueryExecution.executionMode: INTERPRETER
+  - host: worker-3
+    image: nebulastream/worker:v2distributed
+    downstreamNodes:
+      - worker-1
+    capacity: 0
+    worker.defaultQueryExecution.executionMode: INTERPRETER
+  - host: worker-4
+    image: nebulastream/worker:v2distributed
+    downstreamNodes:
+      - worker-1
+    capacity: 0
+    worker.defaultQueryExecution.executionMode: INTERPRETER

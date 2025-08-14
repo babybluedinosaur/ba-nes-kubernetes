@@ -25,6 +25,8 @@ import java.util.Map;
 public class NesQueryReconciler implements Reconciler<NesQuery> {
 
     private static final Logger logger = LogManager.getLogger(NesQueryReconciler.class);
+    private static final String topologyConfigMapName = "topology-config";
+    private static final String topologyFileName = "converted-topology.yaml";
     private String namespace;
     io.fabric8.kubernetes.client.KubernetesClient client;
 
@@ -87,11 +89,11 @@ public class NesQueryReconciler implements Reconciler<NesQuery> {
     private void insertQueryIntoConfigMap(String query) throws JsonProcessingException {
         ConfigMap topologyConfigMap = client.configMaps()
                 .inNamespace(client.getNamespace())
-                .withName("topology-config")
+                .withName(topologyConfigMapName)
                 .get();
 
         if (topologyConfigMap != null) {
-            String originalTopology = topologyConfigMap.getData().get("convert-target.yaml");
+            String originalTopology = topologyConfigMap.getData().get(topologyFileName);
             if (originalTopology != null) {
                 YAMLFactory yamlFactory = new YAMLFactory();
                 yamlFactory.disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER);
@@ -103,16 +105,16 @@ public class NesQueryReconciler implements Reconciler<NesQuery> {
                 tmpNode.setAll(originalNode);
 
                 String updatedTopology = yamlMapper.writeValueAsString(tmpNode);
-                topologyConfigMap.getData().put("convert-target.yaml", updatedTopology);
+                topologyConfigMap.getData().put(topologyFileName, updatedTopology);
                 client.configMaps()
                         .inNamespace(client.getNamespace())
-                        .withName("topology-config")
+                        .withName(topologyConfigMapName)
                         .createOrReplace(topologyConfigMap);
             } else {
-                logger.error("convert-target.yaml not found in configmap topology-config");
+                logger.error(topologyFileName + " not found in configmap " + topologyConfigMapName);
             }
         } else {
-            logger.error("configmap topology-config not found");
+            logger.error("configmap " + topologyConfigMapName + " not found");
         }
     }
 
@@ -126,7 +128,7 @@ public class NesQueryReconciler implements Reconciler<NesQuery> {
                 .withName("nebuli")
                 .withImage(nebuli.getImage())
                 .withImagePullPolicy("IfNotPresent")
-                .withArgs("/topology/convert-target.yaml")
+                .withArgs("/topology/" + topologyFileName)
                 .withVolumeMounts(
                         TopologyMounter.buildTopologyMap(client)
                 )

@@ -27,15 +27,16 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
     // Create a deployment and service for each worker
     public UpdateControl<NesTopology> reconcile(NesTopology desired, Context<NesTopology> context) throws IOException {
         logger.info("Starting reconcile");
+        ConfigBuilder configBuilder = new ConfigBuilder();
+        configBuilder.buildSourceMap(desired, client);
+
         for (Container container : createContainers(desired)) {
             createService(desired, container);
             createDeployment(desired, container);
         }
-        ConfigBuilder configBuilder = new ConfigBuilder();
-        configBuilder.buildTargetMap(
-                desired.getMetadata().getAnnotations().get("topology-file-name"),
-                client
-        );
+
+        // Build target map after creating services, services are needed in converted topology
+        configBuilder.buildTargetMap(client);
         cleanup(desired);
         return UpdateControl.noUpdate();
     }
@@ -61,21 +62,16 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
     public List<String> setArguments(NesWorker worker) {
         List<String> args = new ArrayList<>();
+        Set<String> nonArgumentProperties = Set.of("downstreamNodes", "upstreamNodes", "capacity");
 
-        String executionMode = worker.getExecutionMode();
-        if (executionMode != null) {
-            args.add("--worker.defaultQueryExecution.executionMode=" + executionMode);
+        // Attention: we put all configs after config capacity, as args into the worker
+        // The order in the topology yaml should be basically (top to bottom): config non-args, capacity, config args
+        for (String configName : worker.getAdditionalProperties().keySet()) {
+            if (!nonArgumentProperties.contains(configName)) {
+                args.add("--" + configName + "=" + worker.getAdditionalProperties().get(configName));
+            }
         }
 
-        Integer pageSize = worker.getPageSize();
-        if (pageSize != null) {
-            args.add("--worker.defaultQueryExecution.pageSize=" + pageSize);
-        }
-
-        Integer buffersGlobalManager = worker.getNumberOfBuffersInGlobalBufferManager();
-        if (buffersGlobalManager != null) {
-            args.add("--worker.numberOfBuffersInGlobalBufferManager=" + buffersGlobalManager);
-        }
         args.add(worker.getBind());
         args.add(worker.getConnection() + worker.getHost() + "-service:9090");
         return args;

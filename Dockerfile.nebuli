@@ -1,0 +1,5 @@
+FROM nebulastream/nebuli:v2distributed
+COPY src/main/java/org/acme/QueryReconciler/Utils/query-coordinator.sh /app/query-coordinator.sh
+RUN chmod +x /app/query-coordinator.sh
+
+ENTRYPOINT ["/app/query-coordinator.sh"]

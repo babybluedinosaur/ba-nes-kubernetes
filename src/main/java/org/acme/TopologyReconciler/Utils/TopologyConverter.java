@@ -38,7 +38,7 @@ public class TopologyConverter {
             YAMLFactory yamlFactory = new YAMLFactory();
             yamlFactory.disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER);
             ObjectMapper yamlMapper = new ObjectMapper(yamlFactory);
-            JsonNode fullYaml = yamlMapper.readTree(new File(cr));
+            JsonNode fullYaml = yamlMapper.readTree(cr);
             JsonNode spec = fullYaml.get("spec");
             ArrayNode sinksArray = (ArrayNode) spec.get("sinks");
             ArrayNode physicalArray = (ArrayNode) spec.get("physicalSources");
@@ -99,9 +99,6 @@ public class TopologyConverter {
             ObjectNode tmpNode = mapper.createObjectNode();
 
             //add new fields
-//            Service service = this.client.services().inNamespace(namespace).
-//                    withName(nameNode.asText() + serviceSuffix).get();
-//            String name = service.getMetadata().getName();
             String name = nameNode.asText() + serviceSuffix;
             tmpNode.put("host", name + hostPortSuffix);
             tmpNode.put("grpc", name + grpcPortSuffix);

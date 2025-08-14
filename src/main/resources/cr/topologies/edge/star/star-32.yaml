@@ -632,191 +632,191 @@ spec:
     - host: worker-1
       image: nebulastream/worker:v2distributed
       capacity: 100
-      executionMode: INTERPRETER
-      pageSize: 2048
+      worker.defaultQueryExecution.executionMode: INTERPRETER
+      worker.defaultQueryExecution.pageSize: 2048
     - host: worker-2
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-3
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-4
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-5
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-6
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-7
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-8
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-9
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-10
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-11
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-12
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-13
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-14
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-15
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-16
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-17
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-18
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-19
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-20
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-21
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-22
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-23
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-24
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-25
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-26
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-27
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-28
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-29
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-30
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-31
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER
     - host: worker-32
       image: nebulastream/worker:v2distributed
-      capacity: 0
-      executionMode: INTERPRETER
       downstreamNodes:
         - worker-1
+      capacity: 0
+      worker.defaultQueryExecution.executionMode: INTERPRETER

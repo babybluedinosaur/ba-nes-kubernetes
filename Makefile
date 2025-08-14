@@ -173,10 +173,29 @@ watch-pods:
 random-pod:
 	kubectl run -it --rm --image=busybox debug -- sh
 
-docker-push:
+docker-push-nebuli:
 	docker build --no-cache --pull -t sidondocker/sido-nebuli .
 	docker push sidondocker/sido-nebuli
 
+docker-push-operator:
+	docker build -t nes-k8s-operator:0.1.0 -f Dockerfile.operator .
+	docker tag nes-k8s-operator:0.1.0 europe-west3-docker.pkg.dev/iconic-mariner-468912-g1/nes-k8s-operator/nes-k8s-operator:0.1.0
+	docker push europe-west3-docker.pkg.dev/iconic-mariner-468912-g1/nes-k8s-operator/nes-k8s-operator:0.1.0
+
+gck-get-nodes:
+	gcloud container node-pools list --cluster=nes cluster --zone=europe-west3-a
+
+gck-get-projects:
+	gcloud projects list
+
+gck-get-clusters:
+	gcloud container clusters list --project iconic-mariner-468912-g1
+
+switch-context-mini:
+	kubectl config use-context minikube
+
+switch-context-gke:
+	kubectl config use-context gke_iconic-mariner-468912-g1_europe-west3-a_nes-gke-cluster
 start-ui:
 	k9s
 
