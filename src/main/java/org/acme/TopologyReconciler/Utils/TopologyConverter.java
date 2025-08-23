@@ -10,10 +10,10 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServiceBuilder;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -21,7 +21,7 @@ import org.apache.logging.log4j.Logger;
 // to a normal yaml, so that it can be used for NES nebuli
 public class TopologyConverter {
 
-    final static Logger logger = LogManager.getLogger(TopologyConverter.class.getName());
+    final static Logger logger = LogManager.getLogger(TopologyConverter.class);
     io.fabric8.kubernetes.client.KubernetesClient client;
     String namespace = "default";
     final static String serviceSuffix = "-service";
@@ -34,19 +34,20 @@ public class TopologyConverter {
 
     public String convertTopology(String cr) throws IOException {
         try {
+            logger.info("entered convertTopology");
             // inital setup, get nodes section in custom resource
             YAMLFactory yamlFactory = new YAMLFactory();
             yamlFactory.disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER);
             ObjectMapper yamlMapper = new ObjectMapper(yamlFactory);
             JsonNode fullYaml = yamlMapper.readTree(cr);
             JsonNode spec = fullYaml.get("spec");
-            ArrayNode sinksArray = (ArrayNode) spec.get("sinks");
-            ArrayNode physicalArray = (ArrayNode) spec.get("physicalSources");
-            ArrayNode nodesArray = (ArrayNode) spec.get("workerNodes");
+            ArrayNode sinksArray = getSinks(spec);
+            ArrayNode physicalArray = getPhysicalSources(spec);
+            ArrayNode nodesArray = getWorkerNodes(spec);
 
-            convertSinks(sinksArray);
-            convertPhysicalSources(physicalArray);
-            convertWorkerNodes(nodesArray);
+            if (sinksArray != null) convertSinks(sinksArray);
+            if (physicalArray != null) convertPhysicalSources(physicalArray);
+            if (nodesArray != null) convertWorkerNodes(nodesArray);
 
             return yamlMapper.writeValueAsString(spec);
         } catch (IOException e) {
@@ -57,39 +58,70 @@ public class TopologyConverter {
         return "";
     }
 
+    private ArrayNode getSinks(JsonNode spec) {
+        JsonNode sinksNode = spec.get("sinks");
+        if (sinksNode == null) {
+            logger.warn("sinks is null");
+            return null;
+        }
+        if (!sinksNode.isArray()) {
+            logger.warn("sinks exists but is not an array, type: " + sinksNode.getNodeType());
+            return null;
+        }
+        return (ArrayNode) sinksNode;
+    }
+
+    private ArrayNode getPhysicalSources(JsonNode spec) {
+        JsonNode physicalNode = spec.get("physicalSources");
+        if (physicalNode == null) {
+            logger.warn("physicalSources is null");
+            return null;
+        }
+
+        if (!physicalNode.isArray()) {
+            logger.warn("physicalSources exists but is not an array, type: " + physicalNode.getNodeType());
+            return null;
+        }
+        return (ArrayNode) spec.get("physicalSources");
+    }
+
+    private ArrayNode getWorkerNodes(JsonNode spec) {
+        JsonNode workerNode = spec.get("workerNodes");
+        if (workerNode == null) {
+            logger.warn("workerNodes is null");
+            return null;
+        }
+
+        if (!workerNode.isArray()) {
+            logger.warn("workerNodes exists but is not an array, type: " + workerNode.getNodeType());
+            return null;
+        }
+
+        return (ArrayNode) spec.get("workerNodes");
+    }
+
     private void convertSinks(ArrayNode sinksArray) throws IOException {
-        if (sinksArray != null) {
-            for (int i = 0; i < sinksArray.size(); i++) {
-                JsonNode sink = sinksArray.get(i);
-                String host = sink.get("host").asText();
-                if (host != null && !host.isEmpty()) {
-                    ((ObjectNode) sink).put("host", host + "-service:9090");
-                } else {
-                    logger.error("sink host is null or empty");
-                }
+        for (int i = 0; i < sinksArray.size(); i++) {
+            JsonNode sink = sinksArray.get(i);
+            String host = sink.get("host").asText();
+            if (host != null && !host.isEmpty()) {
+                ((ObjectNode) sink).put("host", host + "-service:9090");
+            } else {
+                logger.error("sink host is null or empty");
             }
-        } else {
-            logger.error("sinks array is null");
         }
     }
 
     private void convertPhysicalSources(ArrayNode physicalArray) throws Exception {
-        if (physicalArray != null) {
-            for (int i = 0; i < physicalArray.size(); i++) {
-                JsonNode physicalNode = physicalArray.get(i);
-                String host = physicalNode.get("host").asText() + serviceSuffix + hostPortSuffix;
-                ((ObjectNode) physicalNode).put("host", host);
-                createPhysicalService(physicalNode);
-            }
-        } else {
-            logger.error("physicalSources array is null");
+        for (int i = 0; i < physicalArray.size(); i++) {
+            JsonNode physicalNode = physicalArray.get(i);
+            String host = physicalNode.get("host").asText() + serviceSuffix + hostPortSuffix;
+            ((ObjectNode) physicalNode).put("host", host);
+            createPhysicalService(physicalNode);
         }
     }
 
     private void convertWorkerNodes(ArrayNode nodesArray) throws IOException {
-        if (nodesArray == null) {
-            System.out.println("nodesArray is not null");
-        }
         for (int i = 0; i < nodesArray.size(); i++) {
             JsonNode node = nodesArray.get(i);
             JsonNode nameNode = node.get("host");

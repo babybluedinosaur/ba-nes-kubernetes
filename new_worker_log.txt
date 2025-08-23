@@ -1,7 +1,0 @@
-[32m[13:56:16.859750] [I] [thread 11] [sender.rs:766] [RUST] Starting sender network service[m
-[32m[13:56:16.859750] [I] [thread 10] [receiver.rs:260] [RUST] Starting control socket: worker-1-service:9090[m
-[32m[13:56:16.859912] [I] [thread 1] [StatisticPrinter.cpp:109] [PrintingStatisticListener] Writing Statistics to: EngineStats_2025-08-12_13-56-16.859605_1.stats[m
-[32m[13:56:16.860330] [I] [thread 10] [receiver.rs:274] [RUST] Listening for connection to 0.0.0.0:9090[m
-[36m[13:56:16.860837] [D] [thread 1] [BufferManager.cpp:129] [initialize] NES memory allocation requires 134217728 out of 15524397056 (so 0.8645600052346406%) available bytes[m
-[36m[13:56:16.958231] [D] [thread 1] [BufferManager.cpp:179] [initialize] BufferManager configuration bufferSize=4096 numOfBuffers=32768[m
-[32m[13:56:16.966634] [I] [thread 1] [SingleNodeWorkerStarter.cpp:85] [main] Server listening on [::]:8080[m

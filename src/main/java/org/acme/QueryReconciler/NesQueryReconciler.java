@@ -5,9 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
-import io.fabric8.kubernetes.api.model.ConfigMap;
-import io.fabric8.kubernetes.api.model.Container;
-import io.fabric8.kubernetes.api.model.ContainerBuilder;
+import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.batch.v1.Job;
 import io.fabric8.kubernetes.api.model.batch.v1.JobBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -57,20 +55,19 @@ public class NesQueryReconciler implements Reconciler<NesQuery> {
         String query = spec.getQuery();
         String name = desired.getMetadata().getName();
         String arg = nebuli.getArgs();
-        insertQueryIntoConfigMap(query);
 
         Job leftoverNebuli = client.batch().v1().jobs().inNamespace(namespace).withName(name).get();
-        if (leftoverNebuli != null) {
-            client.batch().v1().jobs().inNamespace(namespace).withName(name).delete();
-        }
 
         logger.info("argument received in reconcile: '{}'", arg);
         if (arg.equals("start")) {
-            Job job = buildNebuli(desired, nebuli, query);
-            try {
-                client.batch().v1().jobs().inNamespace(desired.getMetadata().getNamespace()).createOrReplace(job);
-            } catch (Exception e) {
-                logger.error("error creating deployment: " + e.getMessage());
+            if (leftoverNebuli == null) {
+                insertQueryIntoConfigMap(query);
+                Job job = buildNebuli(desired, nebuli, query);
+                try {
+                    client.batch().v1().jobs().inNamespace(desired.getMetadata().getNamespace()).createOrReplace(job);
+                } catch (Exception e) {
+                    logger.error("error creating deployment: " + e.getMessage());
+                }
             }
         } else if (arg.equals("stop")) {
             stopNebuli(desired);
@@ -110,6 +107,7 @@ public class NesQueryReconciler implements Reconciler<NesQuery> {
                         .inNamespace(client.getNamespace())
                         .withName(topologyConfigMapName)
                         .createOrReplace(topologyConfigMap);
+                logger.info("updated topology config map");
             } else {
                 logger.error(topologyFileName + " not found in configmap " + topologyConfigMapName);
             }
@@ -139,7 +137,7 @@ public class NesQueryReconciler implements Reconciler<NesQuery> {
 
     private Job buildJob(NesQuery desired, Container container) {
         String name = container.getName();
-        String jobName = "query-" + desired.getMetadata().getName();
+        String jobName = desired.getMetadata().getName();
         Job job = new JobBuilder()
                 .withNewMetadata().withName(jobName).withLabels(Map.of("query", "nebuli")).endMetadata()
                 .withNewSpec()
@@ -147,6 +145,7 @@ public class NesQueryReconciler implements Reconciler<NesQuery> {
                 .withNewMetadata().addToLabels("query", name).endMetadata()
                 .withNewSpec()
                 .addToContainers(container)
+                .withTerminationGracePeriodSeconds(3L)
                 .withVolumes(TopologyMounter.createVolume())
                 .withRestartPolicy("OnFailure")
                 .endSpec()
@@ -161,7 +160,7 @@ public class NesQueryReconciler implements Reconciler<NesQuery> {
         NesQueryStatus status = desired.getStatus();
         String deploymentName = status.getDeploymentName();
         logger.info("stopping nebuli {}", deploymentName);
-        client.apps().deployments()
+        client.batch().v1().jobs()
                 .withName(deploymentName)
                 .delete();
     }

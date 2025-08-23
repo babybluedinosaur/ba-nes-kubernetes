@@ -5,13 +5,6 @@ metadata:
   annotations:
     topology-file-name: edgeless-1
 spec:
-  nodes:
-    - name: worker1
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-      sinks:
-        - name: fast_csv_sink
-          type: Print
-          config:
-            inputFormat: CSV
+  workerNodes:
+    - host: worker-1
+      image: nebulastream/worker:v2distributed

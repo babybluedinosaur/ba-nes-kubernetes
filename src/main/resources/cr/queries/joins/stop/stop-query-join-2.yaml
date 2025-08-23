@@ -1,9 +1,9 @@
 apiVersion: nebulastream.com/v1
 kind: NesQuery
 metadata:
-  name: query-5
+  name: query-join-2
 spec:
-  query: "SELECT * FROM stream5 INTO slow_csv_sink;"
+  query:
   nebuli:
     image: sidondocker/sido-nebuli
     args: "stop"

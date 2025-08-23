@@ -4,6 +4,23 @@ run:
 benchmark:
 	mvn clean test -Dtest=org.acme.BenchmarkQueryTest
 
+benchmark-edgeless:
+	mvn clean test -Dtest=org.acme.BenchmarkTest
+
+run-gke:
+	make delete-all
+	kubectl delete deployment nes-k8s-operator
+	kubectl apply -f src/main/resources/operator/operator-deployment.yaml
+
+benchmark-gke:
+	make delete-all
+	kubectl delete job benchmark-query-test
+	make delete-pvcs
+	kubectl apply -f src/main/resources/operator/benchmark-rbac.yaml
+	kubectl apply -f src/main/resources/operator/operator-deployment.yaml
+	kubectl apply -f src/main/resources/operator/benchmark-pvc.yaml
+	kubectl apply -f src/main/resources/operator/benchmark-job.yaml
+
 run-plots:
 	source venv/bin/activate
 	python plots/plot_edgeless.py
@@ -50,12 +67,16 @@ delete-nebuli:
 	kubectl delete job nebuli
 
 delete-deployments:
-	kubectl delete deployment --all
+	kubectl delete deployment -l nes=worker
 
 delete-pods:
-	kubectl delete pod --all
+	kubectl delete pod -l nes=server
+
+delete-jobs:
+	kubectl delete job -l query=nebuli
 
 delete-pvcs:
+	kubectl delete pv --all
 	kubectl delete pvc --all
 
 delete-queries:
@@ -93,10 +114,12 @@ delete-all:
 	make delete-crs
 	make delete-deployments
 	make delete-queries-cr
+	make delete-jobs
 	make delete-pods
 	make delete-services
 	make delete-configmap
-	make delete-pvcs
+	kubectl delete deployment nes-k8s-operator
+	kubectl delete job benchmark-query-test
 
 describe-deployments:
 	kubectl describe deployments
@@ -174,23 +197,55 @@ random-pod:
 	kubectl run -it --rm --image=busybox debug -- sh
 
 docker-push-nebuli:
-	docker build --no-cache --pull -t sidondocker/sido-nebuli .
+	docker build --no-cache --pull -t sidondocker/sido-nebuli -f Dockerfile.nebuli .
 	docker push sidondocker/sido-nebuli
 
 docker-push-operator:
-	docker build -t nes-k8s-operator:0.1.0 -f Dockerfile.operator .
+	docker build -t nes-k8s-operator:0.1.0 -f src/main/java/org/acme/Dockerfile .
 	docker tag nes-k8s-operator:0.1.0 europe-west3-docker.pkg.dev/iconic-mariner-468912-g1/nes-k8s-operator/nes-k8s-operator:0.1.0
 	docker push europe-west3-docker.pkg.dev/iconic-mariner-468912-g1/nes-k8s-operator/nes-k8s-operator:0.1.0
 
-gck-get-nodes:
-	gcloud container node-pools list --cluster=nes cluster --zone=europe-west3-a
+docker-push-benchmarkquery:
+	docker build -t nes-benchmark:0.1.0 -f src/test/java/org/acme/Dockerfile.query .
+	docker tag nes-benchmark:0.1.0 europe-west3-docker.pkg.dev/iconic-mariner-468912-g1/nes-benchmark/nes-benchmark:0.1.0
+	docker push europe-west3-docker.pkg.dev/iconic-mariner-468912-g1/nes-benchmark/nes-benchmark:0.1.0
+
+docker-push-benchmarkedgeless:
+	docker build -t nes-benchmark-edgeless:0.1.0 -f src/test/java/org/acme/Dockerfile.edgeless .
+	docker tag nes-benchmark-edgeless:0.1.0 europe-west3-docker.pkg.dev/iconic-mariner-468912-g1/nes-benchmark/nes-benchmark-edgeless:0.1.0
+	docker push europe-west3-docker.pkg.dev/iconic-mariner-468912-g1/nes-benchmark/nes-benchmark-edgeless:0.1.0
+
+get-nodes:
+	kubectl get nodes
+
+gck-get-nodepool:
+	gcloud container node-pools list --cluster=nes-gke-cluster --zone=europe-west3-a --project=iconic-mariner-468912-g1
 
 gck-get-projects:
 	gcloud projects list
 
+gck-get-machines:
+	gcloud compute machine-types list --zones=europe-west3-a --project iconic-mariner-468912-g1
+
 gck-get-clusters:
 	gcloud container clusters list --project iconic-mariner-468912-g1
 
+gck-delete-pool:
+	gcloud container node-pools delete default-pool --cluster=nes-gke-cluster --zone=europe-west3-a --project=iconic-mariner-468912-g1
+
+gck-create-pool:
+	gcloud container node-pools create default-pool \
+      --cluster nes-gke-cluster \
+      --machine-type n2-standard-16 \
+      --num-nodes 1 \
+      --region europe-west3-a \
+      --project iconic-mariner-468912-g1
+
+gck-resize-pool:
+	gcloud container clusters resize nes-gke-cluster \
+      --num-nodes 4 \
+      --region europe-west3-a \
+      --project iconic-mariner-468912-g1
 switch-context-mini:
 	kubectl config use-context minikube
 

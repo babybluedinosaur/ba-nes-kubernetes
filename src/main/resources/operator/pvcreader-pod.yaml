@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pvc-reader
+spec:
+  template:
+    spec:
+      containers:
+        - name: reader
+          image: busybox
+          command: ["sh", "-c", "ls -l /app/results && cat /app/results/*.csv || true"]
+          volumeMounts:
+            - name: results
+              mountPath: /app/results
+      restartPolicy: Never
+      volumes:
+        - name: results
+          persistentVolumeClaim:
+            claimName: results-pvc
+  backoffLimit: 0

@@ -1,0 +1,106 @@
+apiVersion: nebulastream.com/v1
+kind: NesQuery
+metadata:
+  name: query-join-32
+spec:
+  query: |
+    SELECT start, end, id FROM (
+      SELECT * FROM (SELECT * FROM stream)
+      INNER JOIN (SELECT * FROM stream2)
+      ON id = id2
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream3)
+      ON id2 = id3
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream4)
+      ON id3 = id4
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream5)
+      ON id4 = id5
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream6)
+      ON id5 = id6
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream7)
+      ON id6 = id7
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream8)
+      ON id7 = id8
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream9)
+      ON id8 = id9
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream10)
+      ON id9 = id10
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream11)
+      ON id10 = id11
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream12)
+      ON id11 = id12
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream13)
+      ON id12 = id13
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream14)
+      ON id13 = id14
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream15)
+      ON id14 = id15
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream16)
+      ON id15 = id16
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream17)
+      ON id16 = id17
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream18)
+      ON id17 = id18
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream19)
+      ON id18 = id19
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream20)
+      ON id19 = id20
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream21)
+      ON id20 = id21
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream22)
+      ON id21 = id22
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream23)
+      ON id22 = id23
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream24)
+      ON id23 = id24
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream25)
+      ON id24 = id25
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream26)
+      ON id25 = id26
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream27)
+      ON id26 = id27
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream28)
+      ON id27 = id28
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream29)
+      ON id28 = id29
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream30)
+      ON id29 = id30
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream31)
+      ON id30 = id31
+      WINDOW TUMBLING (timestamp, size 1 sec)
+      INNER JOIN (SELECT * FROM stream32)
+      ON id31 = id32
+      WINDOW TUMBLING (timestamp, size 1 sec)
+    )
+    INTO fast_csv_sink;
+  nebuli:
+    image: sidondocker/sido-nebuli
+    args: "stop"

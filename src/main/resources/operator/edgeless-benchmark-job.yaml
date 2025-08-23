@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: edgeless-benchmark-query-test
+spec:
+  template:
+    spec:
+      serviceAccountName: edgeless-benchmark
+      containers:
+        - name: edgeless-benchmark-runner
+          image: europe-west3-docker.pkg.dev/iconic-mariner-468912-g1/nes-benchmark/nes-benchmark-edgeless:0.1.0
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: results
+              mountPath: /app/results
+      restartPolicy: Never
+      volumes:
+        - name: results
+          persistentVolumeClaim:
+            claimName: results-pvc
+  backoffLimit: 0

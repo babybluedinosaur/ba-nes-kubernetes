@@ -1,6 +1,8 @@
 package org.acme;
 
 import io.fabric8.kubernetes.api.model.*;
+import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.api.model.apps.DeploymentCondition;
 import io.fabric8.kubernetes.client.*;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.logging.log4j.LogManager;
@@ -12,6 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.*;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashSet;
@@ -25,7 +28,9 @@ public class BenchmarkTest {
 
     private static final Logger logger = LogManager.getLogger(BenchmarkTest.class);
     private static final int TIMEOUT_MINUTES = 5;
-    io.fabric8.kubernetes.client.KubernetesClient client = new DefaultKubernetesClient();
+    private static final int warmupIterations = 5;
+    private static final String namespace = "default";
+    KubernetesClient client = new DefaultKubernetesClient();
     DescriptiveStatistics readyStats = new DescriptiveStatistics();
     DescriptiveStatistics deleteStats = new DescriptiveStatistics();
     List<HasMetadata> resources;
@@ -33,88 +38,47 @@ public class BenchmarkTest {
     String topologyName = "";
     volatile Instant readyStartTime;
     volatile Instant readyDeleteTime;
-    int expectedPods = 0;
-
+    int delay;
+    int nodeCount = 0;
+    int maxIterations = 125;
+    int iteration = 1;
     public BenchmarkTest() {
     }
 
     public void init(String topologyName) {
+        if (this.client != null) {
+            this.client.close();
+        }
         this.client = new DefaultKubernetesClient();
         this.readyNodeNames = Collections.synchronizedSet(new HashSet<>());
         this.topologyName = topologyName;
-        this.expectedPods = Integer.parseInt(topologyName.split("-")[0]);
-    }
-
-    @AfterEach
-    public void tearDown() throws InterruptedException, IOException {
-        if (client != null) {
-            logger.info("closing client");
-            client.close();
-            Thread.sleep(1000);
-        }
+        this.nodeCount = Integer.parseInt(topologyName.split("-")[1]);
+        delay = Math.max(2000, nodeCount * 300);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"edgeless-1","edgeless-2", "edgeless-4", "edgeless-8", "edgeless-16", "edgeless-32"})
+
+    @ValueSource(strings = {"edgeless-32", "edgeless-16", "edgeless-8", "edgeless-4", "edgeless-2", "edgeless-1"})
     public void measureTopologyTime(String topologyName) throws IOException, InterruptedException {
-        logger.info("starting topology benchmark test for " +  topologyName);
+        logger.info("starting topology benchmark test for " + topologyName);
         init(topologyName);
 
-        for (int i = 0; i < 120; i++) {
+        while (iteration <= maxIterations) {
+            logger.info("iteration: " + iteration + " of 125");
             measureReadyTime();
-            Thread.sleep(1000);
             measureDeleteTime();
-            client.resource(resources.removeFirst()).delete();
-            Thread.sleep(1000);
+            iteration++;
         }
 
         writeResultToCSV();
     }
 
     public void measureReadyTime() throws FileNotFoundException, InterruptedException {
-        // Block until all workers are ready
         CountDownLatch latch = new CountDownLatch(1);
-
-        logger.info("calculating readiness duration...");
-        Watch readyWatcher = readyStartTimeWatcher(latch);
+        readyNodeNames.clear();
         readyStartTime = Instant.now();
 
-        resources = client.load(new FileInputStream(
-                        "src/main/resources/cr/topologies/edgeless/" + topologyName + ".yaml"
-                )
-        ).createOrReplace();
-        latch.await(TIMEOUT_MINUTES, TimeUnit.MINUTES);
-        readyWatcher.close();
-    }
-
-    public void measureDeleteTime() throws InterruptedException {
-        // We keep benchmarking other topologies, when the current topology got deleted
-        CountDownLatch latch = new CountDownLatch(1);
-
-        logger.info("calculating delete duration...");
-        Watch deleteWatcher = readyDeleteTimeWatcher(latch);
-        readyDeleteTime = Instant.now();
-
-        client.apps().deployments().withLabel("nes", "worker").delete();
-        latch.await(TIMEOUT_MINUTES, TimeUnit.MINUTES);
-        deleteWatcher.close();
-    }
-
-    public boolean isReady(Pod pod) {
-        if (pod.getStatus() == null || pod.getStatus().getConditions() == null) {
-            return false;
-        }
-        for (PodCondition condition : pod.getStatus().getConditions()) {
-            if (condition.getType().equals("Ready") && condition.getStatus().equals("True")) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public Watch readyStartTimeWatcher(CountDownLatch latch) {
-        AtomicBoolean allNodesReady = new AtomicBoolean(false);
-        Watch watcher = client.pods().inNamespace(client.getNamespace())
+        try (Watch watcher = client.pods().inNamespace(namespace)
                 .withLabel("nes", "worker")
                 .watch(new Watcher<Pod>() {
                     @Override
@@ -130,11 +94,12 @@ public class BenchmarkTest {
                             readyNodeNames.remove(name);
                         }
 
-                        // All pods are ready, stop and print time
-                        if (expectedPods == readyNodeNames.size()) {
+                        // All worker nodes are ready
+                        if (nodeCount == readyNodeNames.size()) {
                             Instant end = Instant.now();
-                            allNodesReady.set(true);
-                            readyStats.addValue(java.time.Duration.between(readyStartTime, end).toMillis());
+                            Duration duration = Duration.between(readyStartTime, end);
+                            if (!isWarmup()) readyStats.addValue(duration.toMillis());
+                            logger.info("all workers spawned in " + duration.toMillis() + " ms");
                             latch.countDown();
                         }
                     }
@@ -148,13 +113,24 @@ public class BenchmarkTest {
                         }
                         latch.countDown();
                     }
-                });
+                })) {
+            Thread.sleep(500);
+            resources = client.load(new FileInputStream(
+                            "src/main/resources/cr/topologies/edgeless/" + topologyName + ".yaml"
+                    )
+            ).createOrReplace();
 
-        return watcher;
+            latch.await(TIMEOUT_MINUTES, TimeUnit.MINUTES);
+            Thread.sleep(delay);
+        }
     }
 
-    public Watch readyDeleteTimeWatcher(CountDownLatch latch) throws InterruptedException {
-        Watch watcher = client.pods().inNamespace(client.getNamespace())
+    public void measureDeleteTime() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        readyDeleteTime = Instant.now();
+        AtomicBoolean alreadyCompleted = new AtomicBoolean(false);
+
+        try (Watch watcher = client.pods().inNamespace(namespace)
                 .withLabel("nes", "worker")
                 .watch(new Watcher<Pod>() {
                     @Override
@@ -163,9 +139,13 @@ public class BenchmarkTest {
                         if (action == Action.DELETED) {
                             readyNodeNames.remove(name);
 
-                            if (readyNodeNames.isEmpty()) {
+                            // All worker nodes are deleted
+                            if (readyNodeNames.isEmpty() && !alreadyCompleted.get()) {
                                 Instant end = Instant.now();
-                                deleteStats.addValue(java.time.Duration.between(readyDeleteTime, end).toMillis());
+                                alreadyCompleted.set(true);
+                                Duration duration = Duration.between(readyDeleteTime, end);
+                                if (!isWarmup()) deleteStats.addValue(duration.toMillis());
+                                logger.info("all workers deleted in " + duration.toMillis() + " ms");
                                 latch.countDown();
                             }
                         }
@@ -173,14 +153,48 @@ public class BenchmarkTest {
 
                     @Override
                     public void onClose(WatcherException e) {
-                        logger.info("watcher closed");
+                        if (e != null) {
+                            logger.error("watcher closed with error: " + e.getMessage(), e);
+                        } else {
+                            logger.info("watcher closed normally");
+                        }
+                        latch.countDown();
                     }
-                });
-        return watcher;
+                })) {
+            Thread.sleep(500);
+
+            for (HasMetadata hasMetadata : resources) {
+                client.resource(hasMetadata).inNamespace(namespace).delete();
+            }
+            client.apps().deployments().withLabel("nes", "worker").withGracePeriod(0).delete();
+
+            latch.await(TIMEOUT_MINUTES, TimeUnit.MINUTES);
+            Thread.sleep(delay);
+        }
+    }
+
+    public boolean isReady(Pod pod) {
+        if (pod.getStatus() == null || pod.getStatus().getConditions() == null) {
+            return false;
+        }
+        for (PodCondition condition : pod.getStatus().getConditions()) {
+            if (condition.getType().equals("Ready") && condition.getStatus().equals("True")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isWarmup() {
+        if (iteration <= warmupIterations) {
+            logger.info("warmup iteration: " + iteration);
+            return true;
+        }
+        return false;
     }
 
     public void writeResultToCSV() throws IOException {
-        File csvFile = new File("results/benchmark_edgeless.csv");
+        File csvFile = new File("/app/results/benchmark_query_firsttimestamp.csv");
         boolean fileExists = csvFile.exists();
         FileWriter writer = new FileWriter(csvFile, true);
 
@@ -189,17 +203,17 @@ public class BenchmarkTest {
                 writer.append("Topology," +
                         "Deploy duration(ms),Delete duration(ms)," +
                         "Deploy stdEv(ms),Delete stdEv(ms)," +
-                        "expectedPods\n");
+                        "nodeCount\n");
             }
 
-            logger.info(topologyName + " " + readyStats.getMean() + " " + deleteStats.getMean() + " " + expectedPods);
+            logger.info(topologyName + " " + readyStats.getMean() + " " + deleteStats.getMean() + " " + nodeCount);
             writer.append(String.format("%s,%.2f,%.2f,%.2f,%.2f,%d\n",
                     topologyName,
                     readyStats.getMean(),
                     deleteStats.getMean(),
                     readyStats.getStandardDeviation(),
                     deleteStats.getStandardDeviation(),
-                    expectedPods
+                    nodeCount
             ));
 
             System.out.println("--readiness values--");

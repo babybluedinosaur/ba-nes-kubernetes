@@ -1,0 +1,14 @@
+FROM maven:3.9.9-eclipse-temurin-17
+
+WORKDIR /app
+
+COPY pom.xml ./
+
+RUN mvn dependency:go-offline -B
+
+COPY src ./src/
+
+RUN mkdir -p /app/results
+
+# Run the benchmark test with optimized JVM settings
+CMD ["sh", "-c", "JAVA_OPTS='-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0' MAVEN_OPTS='-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0' mvn clean test -Dtest=org.acme.BenchmarkTest"]

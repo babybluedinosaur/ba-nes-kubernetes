@@ -1,7 +1,6 @@
 package org.acme;
 
 import io.fabric8.kubernetes.api.model.*;
-import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.client.*;
 import io.fabric8.kubernetes.client.dsl.LogWatch;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
@@ -23,9 +22,7 @@ public class BenchmarkQueryTest {
     private static final String namespace = "default";
     private static final String topologyPrefix = "star-";
     private static final String sourcePrefix = "server-pod-";
-    private int timeoutMinutes;
-    private int delay;
-    private int workerSpawnDelay;
+    private static final int warmupIterations = 5;
     KubernetesClient client = new DefaultKubernetesClient();
     List<HasMetadata> sourceResources;
     List<HasMetadata> topologyResources;
@@ -33,59 +30,61 @@ public class BenchmarkQueryTest {
     Set<String> readySourceNames;
     Set<String> readyNodeNames;
     DescriptiveStatistics firstTimestampStats = new DescriptiveStatistics();
-    DescriptiveStatistics stopQueryStats = new DescriptiveStatistics();
     String queryName = "";
     String sinkName = "";
     volatile Instant queryStartTime;
-    volatile Instant queryStopTime;
+    private int timeoutMinutes;
+    private int delay;
+    private int workerSpawnDelay;
+    int maxIterations = 125;
+    int iteration = 1;
     int nodeCount = 0;
-    int timeoutsFirstTimestamp = 0;
-    int timeoutsQueryStop = 0;
 
     public BenchmarkQueryTest() {
     }
 
     public void init(String queryName) {
+        if (this.client != null) {
+            this.client.close();
+        }
         this.client = new DefaultKubernetesClient();
         this.readySourceNames = Collections.synchronizedSet(new HashSet<>());
         this.readyNodeNames = Collections.synchronizedSet(new HashSet<>());
         this.queryName = queryName;
+        nodeCount = Integer.parseInt(queryName.split("-")[2]);
+        timeoutMinutes = nodeCount > 16 ? 5 : 3;
+        delay = Math.max(3000, nodeCount * 200);
+        workerSpawnDelay = nodeCount*800;
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"query-join-1"})
+    @ValueSource(strings = {"query-join-32", "query-join-16", "query-join-8", "query-join-4", "query-join-2", "query-join-1"})
     public void measureQueryTime(String queryName) throws IOException, InterruptedException {
         logger.info("---starting query benchmark for " + queryName + "---");
-        int maxIterations = 120;
-        int iteration = 1;
         init(queryName);
 
+        spawnSources();
+        spawnTopology();
         while (iteration <= maxIterations) {
-            logger.info("iteration: " + iteration + " of 120");
-            spawnSources();
-            spawnTopology();
+            logger.info("iteration: " + iteration + " of 125");
             measureFirstTimestampTime();
-            measureQueryStopTime();
+            Thread.sleep(1000);
             deleteQuery();
-            deleteServices();
-            deleteTopology();
-            deleteSources();
             iteration++;
-            Thread.sleep(delay);
+            Thread.sleep(2000);
         }
+        deleteServices();
+        deleteTopology();
+        deleteSources();
         writeResultToCSV();
     }
 
     public void spawnSources() throws IOException, InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
-        nodeCount = Integer.parseInt(queryName.split("-")[2]);
-        timeoutMinutes = 2;
-        delay = Math.max(3000, nodeCount * 300);
-        workerSpawnDelay = nodeCount*800;
         String sourceName = sourcePrefix + nodeCount;
         readySourceNames.clear();
 
-        try (Watch watcher = client.pods().inNamespace(client.getNamespace())
+        try (Watch watcher = client.pods().inNamespace(namespace)
                 .withLabel("nes", "server")
                 .watch(new Watcher<Pod>() {
                     @Override
@@ -101,7 +100,7 @@ public class BenchmarkQueryTest {
                             readySourceNames.remove(name);
                         }
 
-                        // All pods are ready
+                        // All sources are ready
                         if (nodeCount == readySourceNames.size()) {
                             logger.info("all sources spawned");
                             latch.countDown();
@@ -135,7 +134,7 @@ public class BenchmarkQueryTest {
         String topologyName = topologyPrefix + nodeCount;
         readyNodeNames.clear();
 
-        try (Watch watcher = client.pods().inNamespace(client.getNamespace())
+        try (Watch watcher = client.pods().inNamespace(namespace)
                 .withLabel("nes", "worker")
                 .watch(new Watcher<Pod>() {
                     @Override
@@ -151,7 +150,7 @@ public class BenchmarkQueryTest {
                             readyNodeNames.remove(name);
                         }
 
-                        // All pods are ready
+                        // All worker nodes are ready
                         if (nodeCount == readyNodeNames.size()) {
                             logger.info("all workers spawned");
                             latch.countDown();
@@ -181,11 +180,11 @@ public class BenchmarkQueryTest {
     }
 
     public String getSinkName() {
-        List<Pod> podList = client.pods().withLabel("app", "worker1").list().getItems();
+        List<Pod> podList = client.pods().withLabel("app", "worker-1").list().getItems();
         if (podList.isEmpty()) {
-            throw new RuntimeException("there is no worker1 (sink)");
+            throw new RuntimeException("there is no worker-1 (sink)");
         }
-        return podList.removeFirst().getMetadata().getName();
+        return podList.remove(0).getMetadata().getName();
     }
 
     public boolean isReady(Pod pod) {
@@ -218,29 +217,6 @@ public class BenchmarkQueryTest {
         boolean success = queryReady.await(timeoutMinutes, TimeUnit.MINUTES);
         if (!success) {
             logger.error("timestamp calculation timed out after " + timeoutMinutes + " minutes");
-            timeoutsFirstTimestamp++;
-        }
-    }
-
-    public void measureQueryStopTime() throws FileNotFoundException, InterruptedException {
-        // Block until query is stopped
-        CountDownLatch queryStopped = new CountDownLatch(1);
-        CountDownLatch watcherReady = new CountDownLatch(1);
-
-        logger.info("calculating query stopping duration in " + queryName + " ...");
-        watchLogsUnregister(queryStopped, watcherReady);
-        watcherReady.await(60, TimeUnit.SECONDS);
-        Thread.sleep(delay);
-
-        queryStopTime = Instant.now();
-        queryResources = client.load(new FileInputStream(
-                        "src/main/resources/cr/queries/joins/stop-" + queryName + ".yaml"
-                )
-        ).createOrReplace();
-        boolean success = queryStopped.await(timeoutMinutes, TimeUnit.MINUTES);
-        if (!success) {
-            logger.error("query stop timed out after " + timeoutMinutes + " minutes");
-            timeoutsQueryStop++;
         }
     }
 
@@ -263,7 +239,7 @@ public class BenchmarkQueryTest {
                             found = true;
                             Instant timestampTime = Instant.now();
                             Duration duration = Duration.between(queryStartTime, timestampTime);
-                            firstTimestampStats.addValue(duration.toMillis());
+                            if (!isWarmup()) firstTimestampStats.addValue(duration.toMillis());
                             logger.info("first timestamp received in: " +
                                     duration.toMillis() + "ms");
                             queryReady.countDown();
@@ -281,262 +257,125 @@ public class BenchmarkQueryTest {
         watchThread.start();
     }
 
-    public void watchLogsUnregister(CountDownLatch queryStopped, CountDownLatch watcherReady) throws InterruptedException {
-        Thread watchThread = new Thread(() -> {
-            try (LogWatch logWatch = client.pods()
-                    .inNamespace(namespace)
-                    .withName(sinkName)
-                    .tailingLines(50)
-                    .watchLog();
-                 BufferedReader reader = new BufferedReader(new InputStreamReader(logWatch.getOutput()))) {
-
-                watcherReady.countDown();
-
-                String line = "";
-                while ((line = reader.readLine()) != null) {
-                    if (line.contains("[unregisterQuery]")) {
-                        Instant unregisterTime = Instant.now();
-                        Duration duration = Duration.between(queryStopTime, unregisterTime);
-                        stopQueryStats.addValue(duration.toMillis());
-                        logger.info("query stopped in: " +
-                                duration.toMillis() + "ms");
-                        queryStopped.countDown();
-                        break;
-                    }
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        watchThread.setDaemon(true);
-        watchThread.start();
+    public boolean isWarmup() {
+        if (iteration <= warmupIterations) {
+            logger.info("warmup iteration: " + iteration);
+            return true;
+        }
+        return false;
     }
 
     public void deleteQuery() throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        Set<String> deletedQueries = new HashSet<>();
+        int maxRetries = 5;
+        int retryCount = 0;
+        for (HasMetadata query : queryResources) {
+            client.resource(query).delete();
+        }
+        client.batch().v1().jobs().inNamespace(namespace).withName(queryName).delete();
 
-        try (Watch watcher = client.pods().inNamespace(client.getNamespace())
-                .withLabel("query", "nebuli")
-                .watch(new Watcher<Pod>() {
-                    @Override
-                    public void eventReceived(Action action, Pod pod) {
-                        String name = pod.getMetadata().getLabels().get("app");
-                        if (action == Action.DELETED) {
-                            deletedQueries.add(name);
-                        }
+        while (client.batch().v1().jobs().inNamespace(namespace).withName(queryName).get() != null) {
+            Thread.sleep(2000);
+        }
 
-                        List<Deployment> query = client.apps().deployments()
-                                .withLabel("query", "nebuli")
-                                .list().getItems();
+        while (!client.pods().inNamespace(namespace).withLabel("query","nebuli").list().getItems().isEmpty()
+                && retryCount < maxRetries) {;
+            Thread.sleep(2000);
+            retryCount++;
+            logger.info("waiting for query to terminate... attempt {}/{}", retryCount, maxRetries);
+        }
 
-                        // All queries are deleted
-                        if (deletedQueries.size() == 1 && query.isEmpty()) {
-                            logger.info("all queries deleted");
-                            latch.countDown();
-                        }
-                    }
+        if (retryCount >= maxRetries) {
+            logger.error("failed to delete query after " + maxRetries + " retries");
+            forceDeleteRemainingQuery();
+        }
+        logger.info("query " + queryName + " deleted");
+    }
 
-                    @Override
-                    public void onClose(WatcherException e) {
-                        if (e != null) {
-                            logger.error("watcher closed with error: " + e.getMessage(), e);
-                        } else {
-                            logger.info("watcher closed normally");
-                        }
-                        latch.countDown();
-                    }
-                })) {
-            Thread.sleep(1000);
-            for (HasMetadata query : queryResources) {
-                client.resource(query).delete();
+    private void forceDeleteRemainingQuery() {
+        try {
+            List<Pod> remainingPods = client.pods().inNamespace(namespace)
+                    .withLabel("query","nebuli").list().getItems();
+
+            for (Pod pod : remainingPods) {
+                logger.warn("force deleting stuck pod: {}", pod.getMetadata().getName());
+                client.pods().inNamespace(namespace)
+                        .withName(pod.getMetadata().getName())
+                        .withGracePeriod(0)
+                        .delete();
             }
-            latch.await(timeoutMinutes, TimeUnit.MINUTES);
-            Thread.sleep(delay);
+            Thread.sleep(5000);
+        } catch (Exception e) {
+            logger.error("error during force cleanup: {}", e.getMessage());
         }
     }
 
     public void deleteServices() throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        Set<String> deletedServices = new HashSet<>();
+        List<Service> services = client.services()
+                .inNamespace(namespace)
+                .withLabel("topology", "nes").list().getItems();
 
-        try (Watch watcher = client.services().inNamespace(client.getNamespace())
-                .withLabel("topology", "nes")
-                .watch(new Watcher<Service>() {
-                    @Override
-                    public void eventReceived(Action action, Service service) {
-                        String name = service.getMetadata().getName();
-                        if (action == Action.DELETED) {
-                            deletedServices.add(name);
-                        }
-
-                        List<Service> services = client.services()
-                                .inNamespace(namespace)
-                                .withLabel("topology", "nes")
-                                .list().getItems();
-
-                        // All services are deleted, two times because every worker and server has a service
-                        if ((2 * nodeCount) == deletedServices.size() && services.isEmpty()) {
-                            logger.info("all services deleted");
-                            latch.countDown();
-                        }
-                    }
-
-                    @Override
-                    public void onClose(WatcherException e) {
-                        if (e != null) {
-                            logger.error("watcher closed with error: " + e.getMessage(), e);
-                        } else {
-                            logger.info("watcher closed normally");
-                        }
-                        latch.countDown();
-                    }
-                })) {
-            Thread.sleep(1000);
-            List<Service> services = client.services()
-                    .inNamespace(namespace)
-                    .withLabel("topology", "nes").list().getItems();
-
-            for (Service service : services) {
-                client.services().inNamespace(namespace).withName(service.getMetadata().getName()).delete();
-            }
-            latch.await(timeoutMinutes, TimeUnit.MINUTES);
-            Thread.sleep(delay);
+        for (Service service : services) {
+            client.services().inNamespace(namespace).withName(service.getMetadata().getName()).delete();
         }
+
+        while (!client.services().inNamespace(namespace).withLabel("topology","nes").list().getItems().isEmpty()) {
+            Thread.sleep(1000);
+        }
+        logger.info("services deleted");
+
     }
 
     public void deleteTopology() throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        Set<String> deletedNodes = new HashSet<>();
-
-        try (Watch watcher = client.pods().inNamespace(client.getNamespace())
-                .withLabel("nes", "worker")
-                .watch(new Watcher<Pod>() {
-                    @Override
-                    public void eventReceived(Action action, Pod pod) {
-                        String name = pod.getMetadata().getLabels().get("app");
-                        if (action == Action.DELETED) {
-                            deletedNodes.add(name);
-                        }
-
-                        List<Deployment> workers = client.apps().deployments()
-                                .withLabel("nes", "worker")
-                                .list().getItems();
-
-                        // All workers are deleted
-                        if (nodeCount == deletedNodes.size() && workers.isEmpty()) {
-                            logger.info("all workers deleted");
-                            latch.countDown();
-                        }
-                    }
-
-                    @Override
-                    public void onClose(WatcherException e) {
-                        if (e != null) {
-                            logger.error("watcher closed with error: " + e.getMessage(), e);
-                        } else {
-                            logger.info("watcher closed normally");
-                        }
-                        latch.countDown();
-                    }
-                })) {
-            Thread.sleep(1000);
-            for (HasMetadata topology : topologyResources) {
-                client.resource(topology).delete();
-            }
-            client.apps().deployments().inNamespace(namespace).withLabel("nes", "worker").delete();
-            latch.await(timeoutMinutes, TimeUnit.MINUTES);
-            Thread.sleep(delay);
+        for (HasMetadata topology : topologyResources) {
+            client.resource(topology).delete();
         }
+        client.apps().deployments().inNamespace(namespace).withLabel("nes", "worker").delete();
+
+        while (!client.apps().deployments().inNamespace(namespace).withLabel("nes", "worker").list().getItems().isEmpty()) {
+            Thread.sleep(1000);
+        }
+        logger.info("topology deleted");
     }
 
     public void deleteSources() throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        Set<String> deletedSources = new HashSet<>();
-
-        try (Watch watcher = client.pods().inNamespace(client.getNamespace())
-                .withLabel("nes", "server")
-                .watch(new Watcher<Pod>() {
-                    @Override
-                    public void eventReceived(Action action, Pod pod) {
-                        String name = pod.getMetadata().getLabels().get("app");
-                        if (action == Action.DELETED) {
-                            deletedSources.add(name);
-                        }
-
-                        List<Pod> pods = client.pods()
-                                .inNamespace(client.getNamespace())
-                                .withLabel("nes", "server")
-                                .list().getItems();
-
-                        // All sources are deleted
-                        if (nodeCount == deletedSources.size() && pods.isEmpty()) {
-                            logger.info("all sources deleted");
-                            latch.countDown();
-                        }
-                    }
-
-                    @Override
-                    public void onClose(WatcherException e) {
-                        if (e != null) {
-                            logger.error("watcher closed with error: " + e.getMessage(), e);
-                        } else {
-                            logger.info("watcher closed normally");
-                        }
-                        latch.countDown();
-                    }
-                })) {
-            Thread.sleep(1000);
-            for (HasMetadata source : sourceResources) {
-                client.resource(source).delete();
-            }
-            latch.await(timeoutMinutes, TimeUnit.MINUTES);
-            Thread.sleep(delay);
+        for (HasMetadata source : sourceResources) {
+            client.resource(source).delete();
         }
+
+        while (!client.pods().inNamespace(namespace).withLabel("nes", "server").list().getItems().isEmpty()) {
+            Thread.sleep(1000);
+        }
+        logger.info("sources deleted");
     }
 
     public void writeResultToCSV() throws IOException {
-        File csvFile = new File("results/benchmark_query.csv");
+        File csvFile = new File("/app/results/benchmark_query_firsttimestamp.csv");
         boolean fileExists = csvFile.exists();
         FileWriter writer = new FileWriter(csvFile, true);
 
         try {
             if (!fileExists) {
                 writer.append("Query," +
-                        "First timestamp duration duration(ms),Query stop duration(ms)," +
-                        "First timestamp duration stdEv(ms),Query stop stdEv(ms)," +
+                        "First timestamp duration duration(ms)," +
+                        "First timestamp duration stdEv(ms)," +
                         "nodeCount\n");
             }
 
-            logger.info(queryName + " " + firstTimestampStats.getMean() + " " + stopQueryStats.getMean() + " " + nodeCount);
-            writer.append(String.format("%s,%.2f,%.2f,%.2f,%.2f,%d,%d,%d\n",
+            writer.append(String.format("%s,%.2f,%.2f,%d\n",
                     queryName,
                     firstTimestampStats.getMean(),
-                    stopQueryStats.getMean(),
                     firstTimestampStats.getStandardDeviation(),
-                    stopQueryStats.getStandardDeviation(),
-                    nodeCount,
-                    timeoutsFirstTimestamp,
-                    timeoutsQueryStop
+                    nodeCount
             ));
 
-            System.out.println("--readiness values--");
-            System.out.println("count: " + firstTimestampStats.getN());
-            System.out.println("mean: " + firstTimestampStats.getMean());
-            System.out.println("stdDev: " + firstTimestampStats.getStandardDeviation());
-            System.out.println("min: " + firstTimestampStats.getMin());
-            System.out.println("max: " + firstTimestampStats.getMax());
-            System.out.println("median: " + firstTimestampStats.getPercentile(50));
-            System.out.println("95th percentile: " + firstTimestampStats.getPercentile(95));
-            System.out.println();
-            System.out.println("--delete values--");
-            System.out.println("count: " + stopQueryStats.getN());
-            System.out.println("mean: " + stopQueryStats.getMean());
-            System.out.println("stdDev: " + stopQueryStats.getStandardDeviation());
-            System.out.println("min: " + stopQueryStats.getMin());
-            System.out.println("max: " + stopQueryStats.getMax());
-            System.out.println("median: " + stopQueryStats.getPercentile(50));
-            System.out.println("95th percentile: " + stopQueryStats.getPercentile(95));
+            logger.info("--readiness values--");
+            logger.info("count: {}", firstTimestampStats.getN());
+            logger.info("mean: {}", firstTimestampStats.getMean());
+            logger.info("stdDev: {}", firstTimestampStats.getStandardDeviation());
+            logger.info("min: {}", firstTimestampStats.getMin());
+            logger.info("max: {}", firstTimestampStats.getMax());
+            logger.info("median: {}", firstTimestampStats.getPercentile(50));
+            logger.info("95th percentile: {}", firstTimestampStats.getPercentile(95));
 
         } finally {
             writer.close();

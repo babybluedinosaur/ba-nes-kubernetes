@@ -5,137 +5,68 @@ metadata:
   annotations:
     topology-file-name: edgeless-32
 spec:
-  nodes:
-    - name: worker1
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-      sinks:
-        - name: fast_csv_sink
-          type: Print
-          config:
-            inputFormat: CSV
-    - name: worker2
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker3
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker4
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker5
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker6
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker7
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker8
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker9
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker10
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker11
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker12
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker13
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker14
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker15
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker16
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker17
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker18
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker19
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker20
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker21
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker22
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker23
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker24
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker25
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker26
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker27
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker28
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker29
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker30
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker31
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker32
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
+  workerNodes:
+    - host: worker-1
+      image: nebulastream/worker:v2distributed
+    - host: worker-2
+      image: nebulastream/worker:v2distributed
+    - host: worker-3
+      image: nebulastream/worker:v2distributed
+    - host: worker-4
+      image: nebulastream/worker:v2distributed
+    - host: worker-5
+      image: nebulastream/worker:v2distributed
+    - host: worker-6
+      image: nebulastream/worker:v2distributed
+    - host: worker-7
+      image: nebulastream/worker:v2distributed
+    - host: worker-8
+      image: nebulastream/worker:v2distributed
+    - host: worker-9
+      image: nebulastream/worker:v2distributed
+    - host: worker-10
+      image: nebulastream/worker:v2distributed
+    - host: worker-11
+      image: nebulastream/worker:v2distributed
+    - host: worker-12
+      image: nebulastream/worker:v2distributed
+    - host: worker-13
+      image: nebulastream/worker:v2distributed
+    - host: worker-14
+      image: nebulastream/worker:v2distributed
+    - host: worker-15
+      image: nebulastream/worker:v2distributed
+    - host: worker-16
+      image: nebulastream/worker:v2distributed
+    - host: worker-17
+      image: nebulastream/worker:v2distributed
+    - host: worker-18
+      image: nebulastream/worker:v2distributed
+    - host: worker-19
+      image: nebulastream/worker:v2distributed
+    - host: worker-20
+      image: nebulastream/worker:v2distributed
+    - host: worker-21
+      image: nebulastream/worker:v2distributed
+    - host: worker-22
+      image: nebulastream/worker:v2distributed
+    - host: worker-23
+      image: nebulastream/worker:v2distributed
+    - host: worker-24
+      image: nebulastream/worker:v2distributed
+    - host: worker-25
+      image: nebulastream/worker:v2distributed
+    - host: worker-26
+      image: nebulastream/worker:v2distributed
+    - host: worker-27
+      image: nebulastream/worker:v2distributed
+    - host: worker-28
+      image: nebulastream/worker:v2distributed
+    - host: worker-29
+      image: nebulastream/worker:v2distributed
+    - host: worker-30
+      image: nebulastream/worker:v2distributed
+    - host: worker-31
+      image: nebulastream/worker:v2distributed
+    - host: worker-32
+      image: nebulastream/worker:v2distributed

@@ -151,6 +151,8 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
                 deleteService(desired, deploymentName, deployment);
             }
         }
+
+        client.configMaps().inNamespace(desired.getMetadata().getNamespace()).withName("topology-config").delete();
     }
 
     private void deleteDeployment(NesTopology desired, String deploymentName, Deployment deployment) {

@@ -5,41 +5,20 @@ metadata:
   annotations:
     topology-file-name: edgeless-8
 spec:
-  nodes:
-    - name: worker1
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-      sinks:
-        - name: fast_csv_sink
-          type: Print
-          config:
-            inputFormat: CSV
-    - name: worker2
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker3
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker4
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker5
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker6
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker7
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
-    - name: worker8
-      image: nebulastream/worker:distributed
-      capacity: 0
-      buffers: 10
+  workerNodes:
+    - host: worker-1
+      image: nebulastream/worker:v2distributed
+    - host: worker-2
+      image: nebulastream/worker:v2distributed
+    - host: worker-3
+      image: nebulastream/worker:v2distributed
+    - host: worker-4
+      image: nebulastream/worker:v2distributed
+    - host: worker-5
+      image: nebulastream/worker:v2distributed
+    - host: worker-6
+      image: nebulastream/worker:v2distributed
+    - host: worker-7
+      image: nebulastream/worker:v2distributed
+    - host: worker-8
+      image: nebulastream/worker:v2distributed

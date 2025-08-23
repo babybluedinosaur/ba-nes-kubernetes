@@ -1,0 +1,11 @@
+.idea
+kubetail
+plots
+results
+/src/main/resources/operator
+/src/main/java/org/acme/
+target
+.gitignore
+Dockerfile.nebuli
+Makefile
+README.md
