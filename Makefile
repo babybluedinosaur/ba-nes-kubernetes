@@ -119,7 +119,7 @@ delete-all:
 	make delete-services
 	make delete-configmap
 	kubectl delete deployment nes-k8s-operator
-	kubectl delete job benchmark-query-test
+	kubectl delete job --all
 
 describe-deployments:
 	kubectl describe deployments
@@ -205,16 +205,30 @@ docker-push-operator:
 	docker tag nes-k8s-operator:0.1.0 europe-west3-docker.pkg.dev/iconic-mariner-468912-g1/nes-k8s-operator/nes-k8s-operator:0.1.0
 	docker push europe-west3-docker.pkg.dev/iconic-mariner-468912-g1/nes-k8s-operator/nes-k8s-operator:0.1.0
 
+docker-public-operator:
+	docker build -t nes-k8s-operator:0.1.0 -f src/main/java/org/acme/Dockerfile .
+	docker tag nes-k8s-operator:0.1.0 docker.io/sidondocker/nes-k8s-operator:0.1.0
+	docker push docker.io/sidondocker/nes-k8s-operator:0.1.0
+
 docker-push-benchmarkquery:
 	docker build -t nes-benchmark:0.1.0 -f src/test/java/org/acme/Dockerfile.query .
 	docker tag nes-benchmark:0.1.0 europe-west3-docker.pkg.dev/iconic-mariner-468912-g1/nes-benchmark/nes-benchmark:0.1.0
 	docker push europe-west3-docker.pkg.dev/iconic-mariner-468912-g1/nes-benchmark/nes-benchmark:0.1.0
+
+docker-public-benchmarkquery:
+	docker build -t nes-benchmark:0.1.0 -f src/test/java/org/acme/Dockerfile.query .
+	docker tag nes-benchmark:0.1.0 docker.io/sidondocker/nes-benchmark:0.1.0
+	docker push docker.io/sidondocker/nes-benchmark:0.1.0
 
 docker-push-benchmarkedgeless:
 	docker build -t nes-benchmark-edgeless:0.1.0 -f src/test/java/org/acme/Dockerfile.edgeless .
 	docker tag nes-benchmark-edgeless:0.1.0 europe-west3-docker.pkg.dev/iconic-mariner-468912-g1/nes-benchmark/nes-benchmark-edgeless:0.1.0
 	docker push europe-west3-docker.pkg.dev/iconic-mariner-468912-g1/nes-benchmark/nes-benchmark-edgeless:0.1.0
 
+docker-public-benchmarkedgeless:
+	docker build -t nes-benchmark-edgeless:0.1.0 -f src/test/java/org/acme/Dockerfile.edgeless .
+	docker tag nes-benchmark-edgeless:0.1.0 docker.io/sidondocker/nes-benchmark-edgeless:0.1.0
+	docker push docker.io/sidondocker/nes-benchmark-edgeless:0.1.0
 get-nodes:
 	kubectl get nodes
 
@@ -243,7 +257,7 @@ gck-create-pool:
 
 gck-resize-pool:
 	gcloud container clusters resize nes-gke-cluster \
-      --num-nodes 4 \
+      --num-nodes 1 \
       --region europe-west3-a \
       --project iconic-mariner-468912-g1
 switch-context-mini:

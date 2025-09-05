@@ -1,0 +1,8 @@
+apiVersion: nebulastream.com/v1
+kind: NesTopology
+metadata:
+  name: edgeless-1
+  annotations:
+    topology-file-name: edgeless-1
+spec:
+  workerNodes:

@@ -66,7 +66,7 @@ public class NesQueryReconciler implements Reconciler<NesQuery> {
                 try {
                     client.batch().v1().jobs().inNamespace(desired.getMetadata().getNamespace()).createOrReplace(job);
                 } catch (Exception e) {
-                    logger.error("error creating deployment: " + e.getMessage());
+                    logger.error("error creating deployment: {}", e.getMessage());
                 }
             }
         } else if (arg.equals("stop")) {
@@ -112,7 +112,7 @@ public class NesQueryReconciler implements Reconciler<NesQuery> {
                 logger.error(topologyFileName + " not found in configmap " + topologyConfigMapName);
             }
         } else {
-            logger.error("configmap " + topologyConfigMapName + " not found");
+            logger.error("configmap {} not found", topologyConfigMapName);
         }
     }
 

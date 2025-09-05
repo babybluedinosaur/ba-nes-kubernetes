@@ -1,15 +1,10 @@
 package org.acme;
 
 import io.fabric8.kubernetes.api.model.*;
-import io.fabric8.kubernetes.api.model.apps.Deployment;
-import io.fabric8.kubernetes.api.model.apps.DeploymentCondition;
 import io.fabric8.kubernetes.client.*;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -53,7 +48,7 @@ public class BenchmarkTest {
         this.readyNodeNames = Collections.synchronizedSet(new HashSet<>());
         this.topologyName = topologyName;
         this.nodeCount = Integer.parseInt(topologyName.split("-")[1]);
-        delay = Math.max(2000, nodeCount * 300);
+        delay = Math.max(2000, nodeCount * 150);
     }
 
     @ParameterizedTest
@@ -69,6 +64,8 @@ public class BenchmarkTest {
             measureDeleteTime();
             iteration++;
         }
+
+        client.resourceList(resources).delete();
 
         writeResultToCSV();
     }
@@ -121,11 +118,10 @@ public class BenchmarkTest {
             ).createOrReplace();
 
             latch.await(TIMEOUT_MINUTES, TimeUnit.MINUTES);
-            Thread.sleep(delay);
         }
     }
 
-    public void measureDeleteTime() throws InterruptedException {
+    public void measureDeleteTime() throws InterruptedException, FileNotFoundException {
         CountDownLatch latch = new CountDownLatch(1);
         readyDeleteTime = Instant.now();
         AtomicBoolean alreadyCompleted = new AtomicBoolean(false);
@@ -163,10 +159,10 @@ public class BenchmarkTest {
                 })) {
             Thread.sleep(500);
 
-            for (HasMetadata hasMetadata : resources) {
-                client.resource(hasMetadata).inNamespace(namespace).delete();
-            }
-            client.apps().deployments().withLabel("nes", "worker").withGracePeriod(0).delete();
+            resources = client.load(new FileInputStream(
+                            "src/main/resources/cr/topologies/edgeless/" + topologyName + "-delete.yaml"
+                    )
+            ).createOrReplace();
 
             latch.await(TIMEOUT_MINUTES, TimeUnit.MINUTES);
             Thread.sleep(delay);

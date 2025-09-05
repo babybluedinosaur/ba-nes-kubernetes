@@ -8,6 +8,8 @@ import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.ConfigMapBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import org.acme.TopologyReconciler.NesTopology;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
@@ -15,6 +17,7 @@ import java.util.Map;
 // This class saves the topology yaml and the converted topology yaml, latter will get used as nebuli input
 public class ConfigBuilder {
 
+    private static final Logger log = LoggerFactory.getLogger(ConfigBuilder.class);
     String namespace = "default";
     Map<String, String> labels = Map.of("topology", "nes");
     String configMapName = "topology-config";
@@ -39,7 +42,7 @@ public class ConfigBuilder {
     }
 
     // Creates configmap, which contains converted yaml for nebuli input
-    public void buildTargetMap(io.fabric8.kubernetes.client.KubernetesClient client) throws IOException {
+    public void buildTargetMap(KubernetesClient client) throws IOException {
         // Get the original topology
         TopologyConverter topologyConverter = new TopologyConverter(client);
         ConfigMap topologyConfigMap = client.configMaps().inNamespace(namespace).withName(configMapName).get();

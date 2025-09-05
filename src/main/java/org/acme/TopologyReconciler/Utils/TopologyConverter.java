@@ -1,5 +1,6 @@
 package org.acme.TopologyReconciler.Utils;
 
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -34,13 +35,15 @@ public class TopologyConverter {
 
     public String convertTopology(String cr) throws IOException {
         try {
-            logger.info("entered convertTopology");
             // inital setup, get nodes section in custom resource
             YAMLFactory yamlFactory = new YAMLFactory();
             yamlFactory.disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER);
             ObjectMapper yamlMapper = new ObjectMapper(yamlFactory);
             JsonNode fullYaml = yamlMapper.readTree(cr);
             JsonNode spec = fullYaml.get("spec");
+            if (spec == null) {
+                return "{}";
+            }
             ArrayNode sinksArray = getSinks(spec);
             ArrayNode physicalArray = getPhysicalSources(spec);
             ArrayNode nodesArray = getWorkerNodes(spec);
@@ -65,7 +68,7 @@ public class TopologyConverter {
             return null;
         }
         if (!sinksNode.isArray()) {
-            logger.warn("sinks exists but is not an array, type: " + sinksNode.getNodeType());
+            logger.warn("sinks exists but is not an array, type: {}", sinksNode.getNodeType());
             return null;
         }
         return (ArrayNode) sinksNode;
@@ -79,7 +82,7 @@ public class TopologyConverter {
         }
 
         if (!physicalNode.isArray()) {
-            logger.warn("physicalSources exists but is not an array, type: " + physicalNode.getNodeType());
+            logger.warn("physicalSources exists but is not an array, type: {}", physicalNode.getNodeType());
             return null;
         }
         return (ArrayNode) spec.get("physicalSources");
@@ -93,7 +96,7 @@ public class TopologyConverter {
         }
 
         if (!workerNode.isArray()) {
-            logger.warn("workerNodes exists but is not an array, type: " + workerNode.getNodeType());
+            logger.warn("workerNodes exists but is not an array, type: {}", workerNode.getNodeType());
             return null;
         }
 
@@ -210,7 +213,7 @@ public class TopologyConverter {
         try {
             this.client.services().inNamespace(namespace).createOrReplace(service);
         } catch (Exception e) {
-            logger.error("error creating service: " + e.getMessage());
+            logger.error("error creating service: {}", e.getMessage());
         }
     }
 }

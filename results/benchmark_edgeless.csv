@@ -1,8 +1,0 @@
-Topology,Deploy duration(ms),Delete duration(ms),Deploy stdEv(ms),Delete stdEv(ms),expectedPods
-1-node,996.33,18.29,41.34,3.51,1
-2-nodes,1039.85,43.84,134.52,7.36,2
-4-nodes,2651.93,53.88,348.76,8.99,4
-8-nodes,3834.78,96.23,273.29,12.35,8
-16-nodes,5276.87,872.03,509.10,7.50,16
-32-nodes,9158.23,2506.43,508.33,197.54,32
-

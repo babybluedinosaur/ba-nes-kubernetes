@@ -16,24 +16,29 @@ import java.util.*;
 public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
     private static final Logger logger = LogManager.getLogger(NesTopologyReconciler.class);
+    private static final String namespace = "default";
     io.fabric8.kubernetes.client.KubernetesClient client;
+    List<HasMetadata> resources;
     Map<String, NesWorker> workerMap;
 
     public NesTopologyReconciler(io.fabric8.kubernetes.client.KubernetesClient client) {
         this.client = client;
+        this.resources = new ArrayList<>();
         this.workerMap = new HashMap<>(); // Contains latest workerSpecs
     }
 
     // Create a deployment and service for each worker
     public UpdateControl<NesTopology> reconcile(NesTopology desired, Context<NesTopology> context) throws IOException {
         logger.info("Starting reconcile");
+        resources.clear();
         ConfigBuilder configBuilder = new ConfigBuilder();
         configBuilder.buildSourceMap(desired, client);
 
         for (Container container : createContainers(desired)) {
-            createService(desired, container);
-            createDeployment(desired, container);
+            createService(container);
+            createDeployment(container);
         }
+        client.resourceList(resources).inNamespace(namespace).createOrReplace();
 
         // Build target map after creating services, services are needed in converted topology
         configBuilder.buildTargetMap(client);
@@ -43,6 +48,9 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
     public List<Container> createContainers(NesTopology desired) {
         List<Container> containers = new ArrayList<>();
+        if (desired.getSpec() == null || desired.getSpec().getWorkerNodes() == null) {
+            return containers;
+        }
         for (NesWorker worker : desired.getSpec().getWorkerNodes()) {
             String name = worker.getHost();
             workerMap.put(name, worker); // Duplicates get overwritten
@@ -77,7 +85,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
         return args;
     }
 
-    public void createDeployment(NesTopology desired, Container container) {
+    public void createDeployment(Container container) {
         String name = container.getName();
         Map<String, String> labels = new HashMap<>();
         labels.put("app", name);
@@ -96,15 +104,15 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
                 .endSpec()
                 .build();
 
-        try {
-            client.apps().deployments().inNamespace(desired.getMetadata().getNamespace()).createOrReplace(deployment);
-        } catch (Exception e) {
-            logger.error("error creating deployment {}: {}", name, e.getMessage());
-        }
+        resources.add(deployment);
     }
 
-    public void createService(NesTopology desired, Container container) {
+    public void createService(Container container) {
         String name = container.getName();
+        if (client.services().inNamespace(namespace).withName(name + "-service").get() != null) {
+            return;
+        }
+
         Service service = new ServiceBuilder()
                 .withNewMetadata().withName(name + "-service").withLabels(Map.of("topology", "nes")).endMetadata()
                 .withNewSpec()
@@ -123,52 +131,55 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
                 .endSpec()
                 .build();
 
-        try {
-            client.services().inNamespace(desired.getMetadata().getNamespace()).createOrReplace(service);
-        } catch (Exception e) {
-            logger.error("error creating service {}: {}", name, e.getMessage());
-        }
+        resources.add(service);
     }
 
     // Delete obsolete deployments and services by comparing current state with the desired state
     public void cleanup(NesTopology desired) {
         List<Deployment> currentDeployments = client.apps().deployments()
-                .inNamespace(desired.getMetadata().getNamespace())
-                .withLabel("topology", "nes")
+                .inNamespace(namespace)
+                .withLabel("nes", "worker")
                 .list()
                 .getItems();
 
         Set<String> desiredNames = new HashSet<>();
-        for (NesWorker worker : desired.getSpec().getWorkerNodes()) {
-            desiredNames.add(worker.getHost());
+
+        // Collect workers which should not get deleted
+        if (desired.getSpec() != null) {
+            List<NesWorker> workers = desired.getSpec().getWorkerNodes();
+            if (workers != null) {
+                for (NesWorker worker : workers) {
+                    desiredNames.add(worker.getHost());
+                }
+            }
         }
 
         // Delete only worker deployments, which are not in desired topology
         for (Deployment deployment : currentDeployments) {
             String deploymentName = deployment.getMetadata().getName();
             if (deploymentName.startsWith("worker") && !desiredNames.contains(deploymentName)) {
-                deleteDeployment(desired,deploymentName, deployment);
-                deleteService(desired, deploymentName, deployment);
+                deleteDeployment(deploymentName);
+                deleteService(deploymentName);
             }
         }
 
-        client.configMaps().inNamespace(desired.getMetadata().getNamespace()).withName("topology-config").delete();
     }
 
-    private void deleteDeployment(NesTopology desired, String deploymentName, Deployment deployment) {
-        logger.info("deleting deployment...: " + deploymentName);
+    private void deleteDeployment(String deploymentName) {
+        logger.info("deleting deployment...: {}", deploymentName);
         client.apps().deployments()
-                .inNamespace(desired.getMetadata().getNamespace())
-                .withName(deployment.getMetadata().getName())
+                .inNamespace(namespace)
+                .withName(deploymentName)
                 .delete();
         logger.info("deployment deleted successfully");
     }
 
-    private void deleteService(NesTopology desired, String deploymentName, Deployment deployment) {
-        logger.info("deleting service...: " + deploymentName + "-service");
+    private void deleteService(String deploymentName) {
+        String serviceName = deploymentName + "-service";
+        logger.info("deleting service...: {}", serviceName);
         client.services()
-                .inNamespace(deployment.getMetadata().getNamespace())
-                .withName(deploymentName + "-service")
+                .inNamespace(namespace)
+                .withName(deploymentName + serviceName)
                 .delete();
         logger.info("service deleted successfully");
     }

@@ -1,0 +1,21 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: benchmark-query-test
+spec:
+  template:
+    spec:
+      serviceAccountName: benchmark
+      containers:
+        - name: benchmark-runner
+          image: docker.io/sidondocker/nes-benchmark:0.1.0
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: results
+              mountPath: /app/results
+      restartPolicy: Never
+      volumes:
+        - name: results
+          persistentVolumeClaim:
+            claimName: results-pvc
+  backoffLimit: 0
