@@ -58,7 +58,7 @@ public class BenchmarkQueryTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"query-join-32", "query-join-16", "query-join-8", "query-join-4", "query-join-2", "query-join-1"})
+    @ValueSource(strings = {"query-join-1","query-join-2", "query-join-4", "query-join-8", "query-join-16", "query-join-32"})
     public void measureQueryTime(String queryName) throws IOException, InterruptedException {
         logger.info("---starting query benchmark for " + queryName + "---");
         init(queryName);
@@ -349,6 +349,15 @@ public class BenchmarkQueryTest {
     }
 
     public void writeResultToCSV() throws IOException {
+        logger.info("--readiness values--");
+        logger.info("count: {}", firstTimestampStats.getN());
+        logger.info("mean: {}", firstTimestampStats.getMean());
+        logger.info("stdDev: {}", firstTimestampStats.getStandardDeviation());
+        logger.info("min: {}", firstTimestampStats.getMin());
+        logger.info("max: {}", firstTimestampStats.getMax());
+        logger.info("median: {}", firstTimestampStats.getPercentile(50));
+        logger.info("95th percentile: {}", firstTimestampStats.getPercentile(95));
+
         File csvFile = new File("/app/results/benchmark_query_firsttimestamp.csv");
         boolean fileExists = csvFile.exists();
         FileWriter writer = new FileWriter(csvFile, true);
@@ -367,15 +376,6 @@ public class BenchmarkQueryTest {
                     firstTimestampStats.getStandardDeviation(),
                     nodeCount
             ));
-
-            logger.info("--readiness values--");
-            logger.info("count: {}", firstTimestampStats.getN());
-            logger.info("mean: {}", firstTimestampStats.getMean());
-            logger.info("stdDev: {}", firstTimestampStats.getStandardDeviation());
-            logger.info("min: {}", firstTimestampStats.getMin());
-            logger.info("max: {}", firstTimestampStats.getMax());
-            logger.info("median: {}", firstTimestampStats.getPercentile(50));
-            logger.info("95th percentile: {}", firstTimestampStats.getPercentile(95));
 
         } finally {
             writer.close();

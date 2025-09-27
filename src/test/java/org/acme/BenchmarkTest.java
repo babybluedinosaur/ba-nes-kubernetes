@@ -53,7 +53,7 @@ public class BenchmarkTest {
 
     @ParameterizedTest
 
-    @ValueSource(strings = {"edgeless-32", "edgeless-16", "edgeless-8", "edgeless-4", "edgeless-2", "edgeless-1"})
+    @ValueSource(strings = {"edgeless-1", "edgeless-2", "edgeless-4", "edgeless-8", "edgeless-16", "edgeless-32"})
     public void measureTopologyTime(String topologyName) throws IOException, InterruptedException {
         logger.info("starting topology benchmark test for " + topologyName);
         init(topologyName);

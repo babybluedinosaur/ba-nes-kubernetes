@@ -17,6 +17,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
     private static final Logger logger = LogManager.getLogger(NesTopologyReconciler.class);
     private static final String namespace = "default";
+    private static final int podCheckDelay = 2000;
     io.fabric8.kubernetes.client.KubernetesClient client;
     List<HasMetadata> resources;
     Map<String, NesWorker> workerMap;
@@ -31,20 +32,63 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
     public UpdateControl<NesTopology> reconcile(NesTopology desired, Context<NesTopology> context) throws IOException {
         logger.info("Starting reconcile");
         resources.clear();
+        String crName = desired.getMetadata().getName();
         ConfigBuilder configBuilder = new ConfigBuilder();
         configBuilder.buildSourceMap(desired, client);
 
         for (Container container : createContainers(desired)) {
             createService(container);
-            createDeployment(container);
+            createDeployment(container, crName);
         }
         client.resourceList(resources).inNamespace(namespace).createOrReplace();
 
         // Build target map after creating services, services are needed in converted topology
         configBuilder.buildTargetMap(client);
         cleanup(desired);
-        return UpdateControl.noUpdate();
+
+        UpdateControl<NesTopology> statusUpdate = setPodsInStatus(desired, crName);
+        if (desired.getStatus().getReadyWorkers() < desired.getStatus().getWorkers()) {
+            return statusUpdate.rescheduleAfter(podCheckDelay);
+        }
+
+        return statusUpdate;
     }
+
+    // Sets the number of ready pods, idea is to allow users to see number of ready pods in corresponding CR
+    public UpdateControl<NesTopology> setPodsInStatus(NesTopology cr, String crName) {
+        List<Pod> pods = client.pods()
+                .inNamespace(namespace)
+                .withLabel("cr", crName)
+                .list()
+                .getItems();
+
+        int totalPods = pods.size();
+        int readyPods = 0;
+        for (Pod pod : pods) {
+            if ("Running".equals(pod.getStatus().getPhase())) {
+                readyPods++;
+            }
+        }
+
+        NesTopologyStatus newStatus = new NesTopologyStatus();
+        newStatus.setWorkers(totalPods);
+        newStatus.setReadyWorkers(readyPods);
+
+        NesTopologyStatus oldStatus = cr.getStatus();
+
+        // compare with old status
+        if (oldStatus != null
+                && oldStatus.getWorkers() == newStatus.getWorkers()
+                && oldStatus.getReadyWorkers() == newStatus.getReadyWorkers()) {
+            return UpdateControl.noUpdate();
+        }
+
+        logger.info("Updating status: {}/{} pods ready for cr {}", readyPods, totalPods, crName);
+        cr.setStatus(newStatus);
+        return UpdateControl.patchStatus(cr);
+    }
+
+
 
     public List<Container> createContainers(NesTopology desired) {
         List<Container> containers = new ArrayList<>();
@@ -85,13 +129,14 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
         return args;
     }
 
-    public void createDeployment(Container container) {
+    public void createDeployment(Container container, String crName) {
         String name = container.getName();
         Map<String, String> labels = new HashMap<>();
         labels.put("app", name);
         labels.put("nes", "worker");
+        labels.put("cr", crName);
         Deployment deployment = new DeploymentBuilder()
-                .withNewMetadata().withName(name).withLabels(Map.of("nes", "worker")).endMetadata()
+                .withNewMetadata().withName(name).withLabels(labels).endMetadata()
                 .withNewSpec()
                 .withNewSelector().addToMatchLabels(labels).endSelector()
                 .withNewTemplate()

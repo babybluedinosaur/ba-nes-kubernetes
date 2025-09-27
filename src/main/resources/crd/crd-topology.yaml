@@ -8,6 +8,17 @@ spec:
     - name: v1
       served: true
       storage: true
+      subresources:
+        status: { }
+      additionalPrinterColumns:
+        - name: READY
+          type: integer
+          description: "Ready workers"
+          jsonPath: .status.readyWorkers
+        - name: TOTAL
+          type: integer
+          description: "Total workers"
+          jsonPath: .status.workers
       schema:
         openAPIV3Schema:
           type: object
@@ -43,6 +54,13 @@ spec:
                     required:
                       - host
                       - image
+            status:
+              type: object
+              properties:
+                workers:
+                  type: integer
+                readyWorkers:
+                  type: integer
   scope: Namespaced
   names:
     plural: nes-topologies
