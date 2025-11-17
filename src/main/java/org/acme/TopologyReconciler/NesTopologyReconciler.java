@@ -7,6 +7,7 @@ import io.javaoperatorsdk.operator.api.reconciler.Reconciler;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import org.acme.TopologyReconciler.Utils.ConfigBuilder;
+import org.acme.TopologyReconciler.Utils.FileMounter;
 import org.acme.TopologyReconciler.Worker.NesWorker;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -91,10 +92,13 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
 
     public List<Container> createContainers(NesTopology desired) {
+        String resourceName = desired.getMetadata().getName();
         List<Container> containers = new ArrayList<>();
+
         if (desired.getSpec() == null || desired.getSpec().getWorkerNodes() == null) {
             return containers;
         }
+
         for (NesWorker worker : desired.getSpec().getWorkerNodes()) {
             String name = worker.getHost();
             workerMap.put(name, worker); // Duplicates get overwritten
@@ -103,6 +107,14 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
             container.setImage(worker.getImage());
             container.setImagePullPolicy("IfNotPresent");
             container.setArgs(setArguments(worker));
+            if (resourceName.startsWith("file")) {
+                container.setVolumeMounts(
+                        Collections.singletonList(
+                                FileMounter.createVolumeMount()
+                        )
+                );
+            }
+
             container.setPorts(Arrays.asList(
                     new ContainerPortBuilder().withContainerPort(8080).build(),
                     new ContainerPortBuilder().withContainerPort(9090).build()
@@ -130,24 +142,32 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
     }
 
     public void createDeployment(Container container, String crName) {
+        boolean hasMounts = container.getVolumeMounts() != null;
         String name = container.getName();
         Map<String, String> labels = new HashMap<>();
         labels.put("app", name);
         labels.put("nes", "worker");
         labels.put("cr", crName);
-        Deployment deployment = new DeploymentBuilder()
+
+        PodSpecBuilder podSpecBuilder = new PodSpecBuilder()
+                .withContainers(container)
+                .withTerminationGracePeriodSeconds(3L);
+        if (hasMounts) {
+            podSpecBuilder = podSpecBuilder.withVolumes(FileMounter.createVolume());
+        }
+        PodSpec podSpec = podSpecBuilder.build();
+        PodTemplateSpec podTemplate = new PodTemplateSpecBuilder()
+                .withMetadata(new ObjectMetaBuilder().withLabels(labels).build())
+                .withSpec(podSpec)
+                .build();
+
+        DeploymentBuilder deploymentBuilder = new DeploymentBuilder()
                 .withNewMetadata().withName(name).withLabels(labels).endMetadata()
                 .withNewSpec()
                 .withNewSelector().addToMatchLabels(labels).endSelector()
-                .withNewTemplate()
-                .withNewMetadata().addToLabels(labels).endMetadata()
-                .withNewSpec()
-                .withTerminationGracePeriodSeconds(3L)
-                .addToContainers(container)
-                .endSpec()
-                .endTemplate()
-                .endSpec()
-                .build();
+                .withTemplate(podTemplate)
+                .endSpec();
+        Deployment deployment = deploymentBuilder.build();
 
         resources.add(deployment);
     }

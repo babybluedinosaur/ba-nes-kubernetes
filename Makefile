@@ -28,34 +28,17 @@ run-plots:
 minikube:
 	minikube start --docker-opt="default-ulimit=nofile=1048576:1048576"
 
-metrics-server:
-	kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+apply-file-test:
+	kubectl apply -f src/main/resources/cr/systest-examples/pvc/stream-files-pvc.yaml
+	kubectl apply -f src/main/resources/cr/systest-examples/systest-simulator-pod.yaml
+	kubectl cp ./src/main/resources/cr/systest-examples/input-files/. systest-simulator-pod:/data
+	kubectl apply -f src/main/resources/cr/systest-examples/examples/topologies/file-1.yaml
 
-apply-cr-topology:
-	kubectl apply -f src/main/resources/cr/convert-source.yaml
-
-apply-crd-topology:
-	kubectl apply -f src/main/resources/crds/crd-topology.yaml
-
-apply-server:
-	kubectl apply -f src/main/resources/physical-source/server-pod-1.yaml
-
-apply-server-service:
-	kubectl apply -f src/main/resources/svc/svc-server.yaml
-
-apply-config:
-	 kubectl apply -f src/main/resources/config/topology-config.yaml
-
-apply-nebuli:
-	 kubectl create configmap topology-config --from-file=src/main/resources/cr/convert-target.yaml --dry-run=client -o yaml | kubectl apply -f -
-	 kubectl apply -f src/main/resources/cr/nebuli.yaml
-
-apply-queries:
-	kubectl apply -f src/main/resources/cr/queries/query.yaml
-	kubectl apply -f src/main/resources/cr/queries/query-2.yaml
-	kubectl apply -f src/main/resources/cr/queries/query-3.yaml
-	kubectl apply -f src/main/resources/cr/queries/query-4.yaml
-	kubectl apply -f src/main/resources/cr/queries/query-5.yaml
+apply-server-test:
+	kubectl apply -f src/main/resources/cr/systest-examples/pvc/stream-files-pvc.yaml
+	kubectl apply -f src/main/resources/physical-source/server.yaml
+	kubectl apply -f src/main/resources/cr/topologies/edge/star/star-1.yaml
+	kubectl apply -f src/main/resources/cr/systest-examples/examples/queries/query-file-1.yaml
 
 delete-cr-topology:
 	kubectl delete -f src/main/resources/cr/cr-topology.yaml
@@ -68,6 +51,7 @@ delete-nebuli:
 
 delete-deployments:
 	kubectl delete deployment -l nes=worker
+	kubectl delete deployment -l app=nes-operator
 
 delete-pods:
 	kubectl delete pod -l nes=server
@@ -118,6 +102,7 @@ delete-all:
 	make delete-pods
 	make delete-services
 	make delete-configmap
+	kubectl delete pod systest-simulator-pod
 	kubectl delete deployment nes-k8s-operator
 	kubectl delete job --all
 

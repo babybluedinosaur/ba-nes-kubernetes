@@ -1,0 +1,9 @@
+apiVersion: nebulastream.com/v1
+kind: NesQuery
+metadata:
+  name: query-file-1
+spec:
+  query: SELECT id FROM stream INTO fast_csv_sink;
+  nebuli:
+    image: sidondocker/sido-nebuli
+    args: "start"

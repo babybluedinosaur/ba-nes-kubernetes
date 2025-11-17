@@ -1,0 +1,32 @@
+apiVersion: nebulastream.com/v1
+kind: NesTopology
+metadata:
+  name: file-1
+spec:
+  sinks:
+    - name: fast_csv_sink
+      type: Print
+      config:
+        inputFormat: CSV
+      schema:
+        - name: stream$id
+          dataType: UINT64
+      host: worker-1
+  logicalSources:
+    - name: stream
+      schema:
+        - dataType: UINT64
+          name: id
+  physicalSources:
+    - logicalSource: stream
+      host: worker-1
+      parserConfig:
+        type: CSV
+      type: File
+      sourceConfig:
+        filePath: /data/stream.csv
+  workerNodes:
+    - host: worker-1
+      image: nebulastream/worker:v2distributed
+      capacity: 100
+      worker.defaultQueryExecution.executionMode: INTERPRETER

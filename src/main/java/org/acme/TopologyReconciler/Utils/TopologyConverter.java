@@ -187,8 +187,9 @@ public class TopologyConverter {
                 String socketHost = sourceConfig.get("socketHost").asText();
                 String serviceName = socketHost + "-service";
                 ((ObjectNode) sourceConfig).set("socketHost", new TextNode(serviceName));
-            } else {
-                throw new Exception("sourceConfig is incomplete. Please add socketHost and socketPort.");
+            } else if (!sourceConfig.has("filePath")) {
+                throw new Exception("sourceConfig is incomplete. Please add socketHost and socketPort. Is 'type'" +
+                        " missing?");
             }
         } else {
             throw new Exception("Invalid physical source. Please add a sourceConfig.");
