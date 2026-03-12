@@ -40,7 +40,7 @@ public class TopologyConverter {
             yamlFactory.disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER);
             ObjectMapper yamlMapper = new ObjectMapper(yamlFactory);
             JsonNode fullYaml = yamlMapper.readTree(cr);
-            JsonNode spec = fullYaml.get("spec");
+            JsonNode spec = fullYaml.has("spec") ? fullYaml.get("spec") : fullYaml;
             if (spec == null) {
                 return "{}";
             }
@@ -75,23 +75,23 @@ public class TopologyConverter {
     }
 
     private ArrayNode getPhysicalSources(JsonNode spec) {
-        JsonNode physicalNode = spec.get("physicalSources");
+        JsonNode physicalNode = spec.get("physical");
         if (physicalNode == null) {
-            logger.warn("physicalSources is null");
+            logger.warn("physical is null");
             return null;
         }
 
         if (!physicalNode.isArray()) {
-            logger.warn("physicalSources exists but is not an array, type: {}", physicalNode.getNodeType());
+            logger.warn("physical exists but is not an array, type: {}", physicalNode.getNodeType());
             return null;
         }
-        return (ArrayNode) spec.get("physicalSources");
+        return (ArrayNode) spec.get("physical");
     }
 
     private ArrayNode getWorkerNodes(JsonNode spec) {
-        JsonNode workerNode = spec.get("workerNodes");
+        JsonNode workerNode = spec.get("workers");
         if (workerNode == null) {
-            logger.warn("workerNodes is null");
+            logger.warn("workers is null");
             return null;
         }
 
@@ -100,7 +100,7 @@ public class TopologyConverter {
             return null;
         }
 
-        return (ArrayNode) spec.get("workerNodes");
+        return (ArrayNode) spec.get("workers");
     }
 
     private void convertSinks(ArrayNode sinksArray) throws IOException {
@@ -108,7 +108,7 @@ public class TopologyConverter {
             JsonNode sink = sinksArray.get(i);
             String host = sink.get("host").asText();
             if (host != null && !host.isEmpty()) {
-                ((ObjectNode) sink).put("host", host + "-service:9090");
+                ((ObjectNode) sink).put("host", host + serviceSuffix + grpcPortSuffix);
             } else {
                 logger.error("sink host is null or empty");
             }
@@ -118,7 +118,7 @@ public class TopologyConverter {
     private void convertPhysicalSources(ArrayNode physicalArray) throws Exception {
         for (int i = 0; i < physicalArray.size(); i++) {
             JsonNode physicalNode = physicalArray.get(i);
-            String host = physicalNode.get("host").asText() + serviceSuffix + hostPortSuffix;
+            String host = physicalNode.get("host").asText() + serviceSuffix + grpcPortSuffix;
             ((ObjectNode) physicalNode).put("host", host);
             createPhysicalService(physicalNode);
         }
@@ -135,7 +135,7 @@ public class TopologyConverter {
 
             //add new fields
             String name = nameNode.asText() + serviceSuffix;
-            tmpNode.put("host", name + hostPortSuffix);
+            tmpNode.put("host", name + grpcPortSuffix);
             tmpNode.put("grpc", name + grpcPortSuffix);
 
             // delete useless fields in original node
@@ -144,7 +144,7 @@ public class TopologyConverter {
             originalNode.remove("image");
 
             // adjust links for nebuli
-            JsonNode downstream = node.get("downstreamNodes");
+            JsonNode downstream = node.get("downstream");
             if (downstream != null && downstream.isArray()) {
                 ArrayNode downstreamArray = (ArrayNode) downstream;
                 for (int j = 0; j < downstreamArray.size(); j++) {
@@ -154,7 +154,7 @@ public class TopologyConverter {
                 }
             }
 
-            JsonNode upstream = node.get("upstreamNodes");
+            JsonNode upstream = node.get("upstream");
             if (upstream != null && upstream.isArray()) {
                 ArrayNode upstreamArray = (ArrayNode) upstream;
                 for (int j = 0; j < upstreamArray.size(); j++) {
@@ -175,8 +175,8 @@ public class TopologyConverter {
 
     // Creates Service for a phyiscal source
     private void createPhysicalService(JsonNode physicalNode) throws Exception {
-        if (physicalNode.has("sourceConfig")) {
-            JsonNode sourceConfig = physicalNode.get("sourceConfig");
+        if (physicalNode.has("source_config")) {
+            JsonNode sourceConfig = physicalNode.get("source_config");
             if (sourceConfig.has("socketHost") && sourceConfig.has("socketPort") &&
                     physicalNode.has("type")) {
                 createService(
@@ -187,12 +187,12 @@ public class TopologyConverter {
                 String socketHost = sourceConfig.get("socketHost").asText();
                 String serviceName = socketHost + "-service";
                 ((ObjectNode) sourceConfig).set("socketHost", new TextNode(serviceName));
-            } else if (!sourceConfig.has("filePath")) {
-                throw new Exception("sourceConfig is incomplete. Please add socketHost and socketPort. Is 'type'" +
+            } else if (!sourceConfig.has("file_path")) {
+                throw new Exception("source_config is incomplete. Please add socketHost and socketPort. Is 'type'" +
                         " missing?");
             }
         } else {
-            throw new Exception("Invalid physical source. Please add a sourceConfig.");
+            throw new Exception("Invalid physical source. Please add a source_config.");
         }
     }
 

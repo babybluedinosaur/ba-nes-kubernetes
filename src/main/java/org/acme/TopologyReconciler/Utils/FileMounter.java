@@ -7,25 +7,24 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 // This class mounts files into pods, as this is needed for NebulaStream systests
 public class FileMounter {
     static String namespace = "default";
-    static String namePVC = "stream-files-pvc";
-    static String nameVolume = "stream-files-volume";
+    static String nameVolume = "source-data-volume";
+    static String configMapName = "sources-config";
+    static String pvcName = "source-data-pvc";
 
+    public static void createPVC (KubernetesClient client) {
+        if (client.persistentVolumeClaims().inNamespace(namespace).withName(pvcName).get() != null) {
+            return;
+        }
 
-    public FileMounter() {
-    }
-
-    public static void createPVC(KubernetesClient client) {
         PersistentVolumeClaim pvc = new PersistentVolumeClaimBuilder()
                 .withNewMetadata()
-                .withName(namePVC)
-                .withNamespace(namespace)
+                .withName(pvcName)
                 .endMetadata()
                 .withNewSpec()
-                .withAccessModes("ReadOnlyMany")
+                .withAccessModes("ReadWriteOnce")
                 .withNewResources()
-                .addToRequests("storage", new Quantity("1Gi"))
+                .addToRequests("storage", new Quantity("10Gi"))
                 .endResources()
-                .withStorageClassName("standard")
                 .endSpec()
                 .build();
 
@@ -33,13 +32,11 @@ public class FileMounter {
     }
 
     public static Volume createVolume() {
-
         return new VolumeBuilder()
                 .withName(nameVolume)
                 .withPersistentVolumeClaim(
                         new PersistentVolumeClaimVolumeSourceBuilder()
-                                .withClaimName(namePVC)
-                                .withReadOnly(false)
+                                .withClaimName(pvcName)
                                 .build()
                 )
                 .build();
@@ -52,3 +49,4 @@ public class FileMounter {
                 .build();
     }
 }
+

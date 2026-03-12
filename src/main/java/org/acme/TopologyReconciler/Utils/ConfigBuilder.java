@@ -14,26 +14,27 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Map;
 
-// This class saves the topology yaml and the converted topology yaml, latter will get used as nebuli input
+// This class creates the initial topology configmap and the converted topology configmap, latter gets used as nebuli input
 public class ConfigBuilder {
 
     private static final Logger log = LoggerFactory.getLogger(ConfigBuilder.class);
     String namespace = "default";
     Map<String, String> labels = Map.of("topology", "nes");
-    String configMapName = "topology-config";
+    String configMapNamePrefix = "topology-config-";
     String topologyFileName = "converted-topology.yaml";
 
-    public void buildSourceMap(NesTopology cr, KubernetesClient client) throws IOException {
+    // Creates configmap, which contains initial topology
+    public void buildTopologyMap(NesTopology cr, KubernetesClient client) throws IOException {
         YAMLFactory yamlFactory = new YAMLFactory();
         yamlFactory.disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER);
         ObjectMapper yamlMapper = new ObjectMapper(yamlFactory);
         yamlMapper.setDefaultPropertyInclusion(JsonInclude.Include.ALWAYS);
-        String originalTopology = yamlMapper.writeValueAsString(cr);
+        String originalTopology = yamlMapper.writeValueAsString(cr.getSpec());
 
         ConfigMap configMap = new ConfigMapBuilder()
                 .withNewMetadata()
                 .withLabels(labels)
-                .withName(configMapName)
+                .withName(configMapNamePrefix + cr.getMetadata().getName())
                 .withNamespace(namespace)
                 .endMetadata()
                 .addToData(topologyFileName, originalTopology)
@@ -41,11 +42,12 @@ public class ConfigBuilder {
         client.configMaps().inNamespace(namespace).createOrReplace(configMap);
     }
 
-    // Creates configmap, which contains converted yaml for nebuli input
-    public void buildTargetMap(KubernetesClient client) throws IOException {
+    // Converts existing topology config map
+    public void convertTopologyMap(NesTopology cr, KubernetesClient client) throws IOException {
         // Get the original topology
         TopologyConverter topologyConverter = new TopologyConverter(client);
-        ConfigMap topologyConfigMap = client.configMaps().inNamespace(namespace).withName(configMapName).get();
+        ConfigMap topologyConfigMap = client.configMaps().inNamespace(namespace).withName(configMapNamePrefix +
+                cr.getMetadata().getName()).get();
 
         // Convert the original topology
         String convertedTopologyContent = topologyConverter.

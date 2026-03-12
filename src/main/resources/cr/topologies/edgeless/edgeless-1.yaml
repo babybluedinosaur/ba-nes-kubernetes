@@ -5,6 +5,6 @@ metadata:
   annotations:
     topology-file-name: edgeless-1
 spec:
-  workerNodes:
+  workers:
     - host: worker-1
-      image: nebulastream/worker:v2distributed
+      image: nebulastream/worker:distributed-poc

@@ -7,16 +7,15 @@ import java.io.IOException;
 // This class creates a volume, which contains the output of the TopologyConverter.
 // The volume is getting mounted into nebuli
 public class TopologyMounter {
-
-    public static VolumeMount buildTopologyMap(io.fabric8.kubernetes.client.KubernetesClient client) throws IOException {
+    public static VolumeMount buildTopologyMount() throws IOException {
         return createVolumeMount();
     }
 
-    public static Volume createVolume() {
+    public static Volume createVolume(String topologyConfigMapName) {
         Volume volume = new VolumeBuilder()
                 .withName("topology-volume")
                 .withConfigMap(new ConfigMapVolumeSourceBuilder()
-                        .withName("topology-config")
+                        .withName(topologyConfigMapName)
                         .build()
                 )
                 .build();

@@ -26,6 +26,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
     public NesTopologyReconciler(io.fabric8.kubernetes.client.KubernetesClient client) {
         this.client = client;
         this.resources = new ArrayList<>();
+        // TODO: is this needed?
         this.workerMap = new HashMap<>(); // Contains latest workerSpecs
     }
 
@@ -34,19 +35,26 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
         logger.info("Starting reconcile");
         resources.clear();
         String crName = desired.getMetadata().getName();
-        ConfigBuilder configBuilder = new ConfigBuilder();
-        configBuilder.buildSourceMap(desired, client);
 
+        // Create configmap with topology
+        ConfigBuilder configBuilder = new ConfigBuilder();
+        configBuilder.buildTopologyMap(desired, client);
+
+        // Create configmap for sources, which is getting filled by NES systests and used by workers
+        FileMounter.createPVC(client);
+
+        // Create services and deployments for workers defined in the topology
         for (Container container : createContainers(desired)) {
             createService(container);
-            createDeployment(container, crName);
+            createDeployment(container, desired);
         }
         client.resourceList(resources).inNamespace(namespace).createOrReplace();
 
-        // Build target map after creating services, services are needed in converted topology
-        configBuilder.buildTargetMap(client);
+        // Converts existing topology configmap using services
+        configBuilder.convertTopologyMap(desired, client);
         cleanup(desired);
 
+        // Update status with number of ready pods
         UpdateControl<NesTopology> statusUpdate = setPodsInStatus(desired, crName);
         if (desired.getStatus().getReadyWorkers() < desired.getStatus().getWorkers()) {
             return statusUpdate.rescheduleAfter(podCheckDelay);
@@ -95,11 +103,11 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
         String resourceName = desired.getMetadata().getName();
         List<Container> containers = new ArrayList<>();
 
-        if (desired.getSpec() == null || desired.getSpec().getWorkerNodes() == null) {
+        if (desired.getSpec() == null || desired.getSpec().getWorkers() == null) {
             return containers;
         }
 
-        for (NesWorker worker : desired.getSpec().getWorkerNodes()) {
+        for (NesWorker worker : desired.getSpec().getWorkers()) {
             String name = worker.getHost();
             workerMap.put(name, worker); // Duplicates get overwritten
             Container container = new Container();
@@ -107,13 +115,13 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
             container.setImage(worker.getImage());
             container.setImagePullPolicy("IfNotPresent");
             container.setArgs(setArguments(worker));
-            if (resourceName.startsWith("file")) {
+//            if (resourceName.startsWith("file")) {
                 container.setVolumeMounts(
                         Collections.singletonList(
                                 FileMounter.createVolumeMount()
                         )
                 );
-            }
+//            }
 
             container.setPorts(Arrays.asList(
                     new ContainerPortBuilder().withContainerPort(8080).build(),
@@ -126,7 +134,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
     public List<String> setArguments(NesWorker worker) {
         List<String> args = new ArrayList<>();
-        Set<String> nonArgumentProperties = Set.of("downstreamNodes", "upstreamNodes", "capacity");
+        Set<String> nonArgumentProperties = Set.of("downstream", "upstream", "capacity");
 
         // Attention: we put all configs after config capacity, as args into the worker
         // The order in the topology yaml should be basically (top to bottom): config non-args, capacity, config args
@@ -136,18 +144,16 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
             }
         }
 
-        args.add(worker.getBind());
-        args.add(worker.getConnection() + worker.getHost() + "-service:9090");
         return args;
     }
 
-    public void createDeployment(Container container, String crName) {
+    public void createDeployment(Container container, NesTopology desired) {
         boolean hasMounts = container.getVolumeMounts() != null;
         String name = container.getName();
         Map<String, String> labels = new HashMap<>();
         labels.put("app", name);
         labels.put("nes", "worker");
-        labels.put("cr", crName);
+        labels.put("cr", desired.getMetadata().getName());
 
         PodSpecBuilder podSpecBuilder = new PodSpecBuilder()
                 .withContainers(container)
@@ -161,13 +167,28 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
                 .withSpec(podSpec)
                 .build();
 
-        DeploymentBuilder deploymentBuilder = new DeploymentBuilder()
-                .withNewMetadata().withName(name).withLabels(labels).endMetadata()
+        String uid = desired.getMetadata().getUid();
+
+        Deployment deployment = new DeploymentBuilder()
+                .withNewMetadata()
+                .withName(name)
+                .withLabels(labels)
+                .addNewOwnerReference()
+                .withApiVersion(desired.getApiVersion())
+                .withKind(desired.getKind())
+                .withName(desired.getMetadata().getName())
+                .withUid(uid)
+                .withController(true)
+                .withBlockOwnerDeletion(true)
+                .endOwnerReference()
+                .endMetadata()
                 .withNewSpec()
-                .withNewSelector().addToMatchLabels(labels).endSelector()
+                .withSelector(new LabelSelectorBuilder()
+                        .addToMatchLabels(labels)
+                        .build())
                 .withTemplate(podTemplate)
-                .endSpec();
-        Deployment deployment = deploymentBuilder.build();
+                .endSpec()
+                .build();
 
         resources.add(deployment);
     }
@@ -211,7 +232,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
         // Collect workers which should not get deleted
         if (desired.getSpec() != null) {
-            List<NesWorker> workers = desired.getSpec().getWorkerNodes();
+            List<NesWorker> workers = desired.getSpec().getWorkers();
             if (workers != null) {
                 for (NesWorker worker : workers) {
                     desiredNames.add(worker.getHost());

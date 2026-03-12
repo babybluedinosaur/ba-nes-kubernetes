@@ -8,34 +8,34 @@ import java.util.List;
 public class NesTopologySpec {
 
     private List<JsonNode> sinks;
-    private List<JsonNode> logicalSources;
-    private List<JsonNode> physicalSources;
-    private List<NesWorker> workerNodes;
+    private List<JsonNode> logical;
+    private List<JsonNode> physical;
+    private List<NesWorker> workers;
 
     public List<JsonNode> getSinks() { return sinks; }
 
-    public List<JsonNode> getLogicalSources() {
-        return logicalSources;
+    public List<JsonNode> getLogical() {
+        return logical;
     }
 
-    public List<JsonNode> getPhysicalSources() { return physicalSources; }
+    public List<JsonNode> getPhysical() { return physical; }
 
-    public List<NesWorker> getWorkerNodes() { return workerNodes; }
+    public List<NesWorker> getWorkers() { return workers; }
 
     public void setSinks(List<JsonNode> sinks) {
         this.sinks = sinks;
     }
 
-    public void setLogicalSources(List<JsonNode> logicalSources) {
-        this.logicalSources = logicalSources;
+    public void setLogical(List<JsonNode> logical) {
+        this.logical = logical;
     }
 
-    public void setPhysicalSources(List<JsonNode> physicalSources) {
-        this.physicalSources = physicalSources;
+    public void setPhysical(List<JsonNode> physical) {
+        this.physical = physical;
     }
 
-    public void setWorkerNodes(List<NesWorker> workerNodes) {
-        this.workerNodes = workerNodes;
+    public void setWorkers(List<NesWorker> workers) {
+        this.workers = workers;
     }
 
 }

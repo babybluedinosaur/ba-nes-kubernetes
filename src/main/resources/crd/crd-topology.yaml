@@ -31,17 +31,17 @@ spec:
                   items:
                     type: object
                     x-kubernetes-preserve-unknown-fields: true
-                logicalSources:
+                logical:
                   type: array
                   items:
                     type: object
                     x-kubernetes-preserve-unknown-fields: true
-                physicalSources:
+                physical:
                   type: array
                   items:
                     type: object
                     x-kubernetes-preserve-unknown-fields: true
-                workerNodes:
+                workers:
                   type: array
                   items:
                     type: object

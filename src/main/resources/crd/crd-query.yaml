@@ -26,10 +26,14 @@ spec:
                       type: string
                     args:
                       type: string
+                topologyName:
+                  type: string
             status:
               type: object
               properties:
                 deploymentName:
+                  type: string
+                status:
                   type: string
   scope: Namespaced
   names:

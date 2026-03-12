@@ -14,8 +14,6 @@ public class NesWorker {
 
     private String host;
     private String image;
-    private final String bind = "--bind=0.0.0.0:9090";
-    private String connection = "--connection=";
     @JsonIgnore
     private Map<String, Object> additionalProperties = new LinkedHashMap<>();
 
@@ -26,14 +24,6 @@ public class NesWorker {
 
     public String getImage() {
         return image;
-    }
-
-    public String getBind() {
-        return bind;
-    }
-
-    public String getConnection() {
-        return connection;
     }
 
     @JsonAnyGetter
