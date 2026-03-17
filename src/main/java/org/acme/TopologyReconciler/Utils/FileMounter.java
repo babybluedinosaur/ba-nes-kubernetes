@@ -8,7 +8,6 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 public class FileMounter {
     static String namespace = "default";
     static String nameVolume = "source-data-volume";
-    static String configMapName = "sources-config";
     static String pvcName = "source-data-pvc";
 
     public static void createPVC (KubernetesClient client) {

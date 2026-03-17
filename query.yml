@@ -1,0 +1,37 @@
+query: "SELECT ID, VALUE, TIMESTAMP\nFROM FILE(\n\t'/DATA/STREAM8.CSV' AS `SOURCE`.FILE_PATH,\n\
+  \t'CSV' AS PARSER.`TYPE`,\n\tSCHEMA(ID UINT64, VALUE UINT64, TIMESTAMP UINT64) AS\
+  \ `SOURCE`.`SCHEMA`)\nINTO FILE_OUTPUT;"
+sinks:
+  - config:
+      input_format: "CSV"
+    host: "worker-1-service:8080"
+    name: "FILE_OUTPUT"
+    schema:
+      - name: "ID"
+        type: "UINT64"
+      - name: "VALUE"
+        type: "UINT64"
+      - name: "TIMESTAMP"
+        type: "UINT64"
+    type: "Print"
+logical:
+  - name: "2"
+    schema:
+      - name: "ID"
+        type: "UINT64"
+      - name: "VALUE"
+        type: "UINT64"
+      - name: "TIMESTAMP"
+        type: "UINT64"
+physical:
+  - host: "worker-1-service:8080"
+    logical: "2"
+    parser_config:
+      type: "CSV"
+    source_config:
+      file_path: "/data/stream8.csv"
+    type: "FILE"
+workers:
+  - host: "worker-1-service:8080"
+    grpc: "worker-1-service:8080"
+    capacity: 100

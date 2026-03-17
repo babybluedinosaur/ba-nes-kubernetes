@@ -21,13 +21,10 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
     private static final int podCheckDelay = 2000;
     io.fabric8.kubernetes.client.KubernetesClient client;
     List<HasMetadata> resources;
-    Map<String, NesWorker> workerMap;
 
     public NesTopologyReconciler(io.fabric8.kubernetes.client.KubernetesClient client) {
         this.client = client;
         this.resources = new ArrayList<>();
-        // TODO: is this needed?
-        this.workerMap = new HashMap<>(); // Contains latest workerSpecs
     }
 
     // Create a deployment and service for each worker
@@ -98,9 +95,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
     }
 
 
-
     public List<Container> createContainers(NesTopology desired) {
-        String resourceName = desired.getMetadata().getName();
         List<Container> containers = new ArrayList<>();
 
         if (desired.getSpec() == null || desired.getSpec().getWorkers() == null) {
@@ -109,19 +104,16 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
         for (NesWorker worker : desired.getSpec().getWorkers()) {
             String name = worker.getHost();
-            workerMap.put(name, worker); // Duplicates get overwritten
             Container container = new Container();
             container.setName(name);
             container.setImage(worker.getImage());
             container.setImagePullPolicy("IfNotPresent");
             container.setArgs(setArguments(worker));
-//            if (resourceName.startsWith("file")) {
-                container.setVolumeMounts(
-                        Collections.singletonList(
-                                FileMounter.createVolumeMount()
-                        )
-                );
-//            }
+            container.setVolumeMounts(
+                    Collections.singletonList(
+                            FileMounter.createVolumeMount()
+                    )
+            );
 
             container.setPorts(Arrays.asList(
                     new ContainerPortBuilder().withContainerPort(8080).build(),
