@@ -27,7 +27,7 @@ public class TopologyConverter {
     String namespace = "default";
     final static String serviceSuffix = "-service";
     final static String hostPortSuffix = ":9090";
-    final static String grpcPortSuffix = ":8080";
+    final static String dataPortSuffix = ":8080";
 
     public TopologyConverter(io.fabric8.kubernetes.client.KubernetesClient client) {
         this.client = client;
@@ -52,7 +52,12 @@ public class TopologyConverter {
             if (physicalArray != null) convertPhysicalSources(physicalArray);
             if (nodesArray != null) convertWorkerNodes(nodesArray);
 
-            return yamlMapper.writeValueAsString(spec);
+            String serialized = yamlMapper.writeValueAsString(spec);
+
+            serialized = serialized.replaceAll("logical:\\s*null", "logical: []");
+            serialized = serialized.replaceAll("physical:\\s*null", "physical: []");
+
+            return serialized;
         } catch (IOException e) {
             e.printStackTrace();
         } catch (Exception e) {
@@ -108,7 +113,7 @@ public class TopologyConverter {
             JsonNode sink = sinksArray.get(i);
             String host = sink.get("host").asText();
             if (host != null && !host.isEmpty()) {
-                ((ObjectNode) sink).put("host", host + serviceSuffix + grpcPortSuffix);
+                ((ObjectNode) sink).put("host", host + serviceSuffix + dataPortSuffix);
             } else {
                 logger.error("sink host is null or empty");
             }
@@ -118,7 +123,7 @@ public class TopologyConverter {
     private void convertPhysicalSources(ArrayNode physicalArray) throws Exception {
         for (int i = 0; i < physicalArray.size(); i++) {
             JsonNode physicalNode = physicalArray.get(i);
-            String host = physicalNode.get("host").asText() + serviceSuffix + grpcPortSuffix;
+            String host = physicalNode.get("host").asText() + serviceSuffix + dataPortSuffix;
             ((ObjectNode) physicalNode).put("host", host);
             createPhysicalService(physicalNode);
         }
@@ -135,8 +140,8 @@ public class TopologyConverter {
 
             //add new fields
             String name = nameNode.asText() + serviceSuffix;
-            tmpNode.put("host", name + grpcPortSuffix);
-            tmpNode.put("grpc", name + grpcPortSuffix);
+            tmpNode.put("host", name + dataPortSuffix);
+            tmpNode.put("data_address", name + hostPortSuffix);
 
             // delete useless fields in original node
             ObjectNode originalNode = (ObjectNode) node;

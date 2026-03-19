@@ -1,4 +1,4 @@
-FROM nebulastream/nes-cli:distributed-poc
+FROM sidondocker/nes-cli:nullable-patch
 
 RUN apt-get update && apt-get install -y jq && rm -rf /var/lib/apt/lists/*
 
@@ -6,3 +6,4 @@ COPY src/main/java/org/acme/QueryReconciler/Utils/query-coordinator.sh /app/quer
 RUN chmod +x /app/query-coordinator.sh
 
 ENTRYPOINT ["/app/query-coordinator.sh"]
+CMD []

@@ -37,8 +37,9 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
         ConfigBuilder configBuilder = new ConfigBuilder();
         configBuilder.buildTopologyMap(desired, client);
 
-        // Create configmap for sources, which is getting filled by NES systests and used by workers
-        FileMounter.createPVC(client);
+        // Create PVC for sources, which is getting filled by NES systests and used by workers
+        FileMounter.createSourcePVC(client);
+        FileMounter.createSinkPVC(client);
 
         // Create services and deployments for workers defined in the topology
         for (Container container : createContainers(desired)) {
@@ -109,11 +110,10 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
             container.setImage(worker.getImage());
             container.setImagePullPolicy("IfNotPresent");
             container.setArgs(setArguments(worker));
-            container.setVolumeMounts(
-                    Collections.singletonList(
-                            FileMounter.createVolumeMount()
-                    )
-            );
+            container.setVolumeMounts(Arrays.asList(
+                    FileMounter.createSourceVolumeMount(),
+                    FileMounter.createSinkVolumeMount()
+            ));
 
             container.setPorts(Arrays.asList(
                     new ContainerPortBuilder().withContainerPort(8080).build(),
@@ -126,10 +126,10 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
 
     public List<String> setArguments(NesWorker worker) {
         List<String> args = new ArrayList<>();
-        Set<String> nonArgumentProperties = Set.of("downstream", "upstream", "capacity");
+        Set<String> nonArgumentProperties = Set.of("downstream", "upstream", "max_operators");
 
-        // Attention: we put all configs after config capacity, as args into the worker
-        // The order in the topology yaml should be basically (top to bottom): config non-args, capacity, config args
+        // Attention: we put all configs after config max_operators, as args into the worker
+        // The order in the topology yaml should be basically (top to bottom): config non-args, max_operators, config args
         for (String configName : worker.getAdditionalProperties().keySet()) {
             if (!nonArgumentProperties.contains(configName)) {
                 args.add("--" + configName + "=" + worker.getAdditionalProperties().get(configName));
@@ -151,7 +151,7 @@ public class NesTopologyReconciler implements Reconciler<NesTopology> {
                 .withContainers(container)
                 .withTerminationGracePeriodSeconds(3L);
         if (hasMounts) {
-            podSpecBuilder = podSpecBuilder.withVolumes(FileMounter.createVolume());
+            podSpecBuilder = podSpecBuilder.withVolumes(FileMounter.createSourceVolume(), FileMounter.createSinkVolume());
         }
         PodSpec podSpec = podSpecBuilder.build();
         PodTemplateSpec podTemplate = new PodTemplateSpecBuilder()

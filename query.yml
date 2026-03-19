@@ -1,37 +1,45 @@
-query: "SELECT ID, VALUE, TIMESTAMP\nFROM FILE(\n\t'/DATA/STREAM8.CSV' AS `SOURCE`.FILE_PATH,\n\
-  \t'CSV' AS PARSER.`TYPE`,\n\tSCHEMA(ID UINT64, VALUE UINT64, TIMESTAMP UINT64) AS\
-  \ `SOURCE`.`SCHEMA`)\nINTO FILE_OUTPUT;"
+query: "SELECT ID, VALUE, TIMESTAMP\nFROM File(\n\t'/data/stream8.csv' AS `SOURCE`.FILE_PATH,\n\
+  \t'CSV' AS PARSER.`TYPE`,\n\tSCHEMA(id UINT64 NOT NULL, value UINT64 NOT NULL, timestamp\
+  \ UINT64 NOT NULL) AS `SOURCE`.`SCHEMA`,'worker-1-service:8080' AS `SOURCE`.`HOST`)\n\
+  INTO Checksum('worker-1-service:8080' AS `SINK`.`HOST`,\n'/sink-output/sink-output.csv'\
+  \ AS `SINK`.FILE_PATH,\n'CSV' AS `SINK`.OUTPUT_FORMAT);"
 sinks:
   - config:
-      input_format: "CSV"
+      file_path: "/sink-output/sink-output.csv"
+      output_format: "CSV"
     host: "worker-1-service:8080"
-    name: "FILE_OUTPUT"
+    name: "Checksum"
+    parser_config: {}
     schema:
-      - name: "ID"
+      - name: "S$Count"
+        nullable: false
         type: "UINT64"
-      - name: "VALUE"
+      - name: "S$Checksum"
+        nullable: false
         type: "UINT64"
-      - name: "TIMESTAMP"
-        type: "UINT64"
-    type: "Print"
+    type: "CHECKSUM"
 logical:
-  - name: "2"
+  - name: "1"
     schema:
       - name: "ID"
+        nullable: false
         type: "UINT64"
       - name: "VALUE"
+        nullable: false
         type: "UINT64"
       - name: "TIMESTAMP"
+        nullable: false
         type: "UINT64"
 physical:
   - host: "worker-1-service:8080"
-    logical: "2"
+    logical: "1"
     parser_config:
+      field_delimiter: ","
       type: "CSV"
     source_config:
       file_path: "/data/stream8.csv"
     type: "FILE"
 workers:
   - host: "worker-1-service:8080"
-    grpc: "worker-1-service:8080"
-    capacity: 100
+    data_address: "worker-1-service:9090"
+    max_operators: 100

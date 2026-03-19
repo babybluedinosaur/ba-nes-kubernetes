@@ -7,17 +7,21 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 // This class mounts files into pods, as this is needed for NebulaStream systests
 public class FileMounter {
     static String namespace = "default";
-    static String nameVolume = "source-data-volume";
-    static String pvcName = "source-data-pvc";
 
-    public static void createPVC (KubernetesClient client) {
-        if (client.persistentVolumeClaims().inNamespace(namespace).withName(pvcName).get() != null) {
+    static String sourceVolumeName = "source-data-volume";
+    static String sourcePvcName = "source-data-pvc";
+
+    static String sinkVolumeName = "sink-volume";
+    static String sinkPvcName = "sink-pvc";
+
+    public static void createSourcePVC (KubernetesClient client) {
+        if (client.persistentVolumeClaims().inNamespace(namespace).withName(sourcePvcName).get() != null) {
             return;
         }
 
         PersistentVolumeClaim pvc = new PersistentVolumeClaimBuilder()
                 .withNewMetadata()
-                .withName(pvcName)
+                .withName(sourcePvcName)
                 .endMetadata()
                 .withNewSpec()
                 .withAccessModes("ReadWriteOnce")
@@ -30,22 +34,61 @@ public class FileMounter {
         client.persistentVolumeClaims().inNamespace(namespace).createOrReplace(pvc);
     }
 
-    public static Volume createVolume() {
+    public static Volume createSourceVolume() {
         return new VolumeBuilder()
-                .withName(nameVolume)
+                .withName(sourceVolumeName)
                 .withPersistentVolumeClaim(
                         new PersistentVolumeClaimVolumeSourceBuilder()
-                                .withClaimName(pvcName)
+                                .withClaimName(sourcePvcName)
                                 .build()
                 )
                 .build();
     }
 
-    public static VolumeMount createVolumeMount() {
+    public static VolumeMount createSourceVolumeMount() {
         return new VolumeMountBuilder()
-                .withName(nameVolume)
+                .withName(sourceVolumeName)
                 .withMountPath("/data")
                 .build();
+    }
+
+
+    public static void createSinkPVC(KubernetesClient client) {
+        if (client.persistentVolumeClaims().inNamespace(namespace).withName(sinkPvcName).get() != null) {
+            return;
+        }
+
+        PersistentVolumeClaim pvc = new PersistentVolumeClaimBuilder()
+                .withNewMetadata()
+                .withName(sinkPvcName)
+                .endMetadata()
+                .withNewSpec()
+                .withAccessModes("ReadWriteOnce")
+                .withNewResources()
+                .addToRequests("storage", new Quantity("1Gi"))
+                .endResources()
+                .endSpec()
+                .build();
+
+        client.persistentVolumeClaims().inNamespace(namespace).createOrReplace(pvc);
+    }
+
+    public static Volume createSinkVolume() {
+        return new VolumeBuilder()
+                .withName(sinkVolumeName)
+                .withPersistentVolumeClaim(
+                        new PersistentVolumeClaimVolumeSourceBuilder()
+                                .withClaimName(sinkPvcName)
+                                .build()
+                )
+                .build();
+    }
+
+    public static VolumeMount createSinkVolumeMount() {
+        VolumeMount volumeMount = new VolumeMount();
+        volumeMount.setName(sinkVolumeName);
+        volumeMount.setMountPath("/sink-output");
+        return volumeMount;
     }
 }
 
